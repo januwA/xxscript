@@ -1,0 +1,11 @@
+// ×¢ÊÍ
+
+function a() { return 123; };
+
+function b(x,y) { return x + y; };
+
+a();
+b(122,2.3);
+
+// 
+return x - y;

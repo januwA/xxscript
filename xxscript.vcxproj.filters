@@ -18,13 +18,44 @@
     <ClCompile Include="xxscript.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="parser.cpp">
+      <Filter>资源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="lexer.cpp">
+      <Filter>资源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ast.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CodeGen.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="lexer.l">
+    <None Include="README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="lexer.l">
       <Filter>源文件</Filter>
-    </None>
-    <None Include="parser.y">
+    </CustomBuild>
+    <CustomBuild Include="parser.y">
       <Filter>源文件</Filter>
-    </None>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="parser.h">
+      <Filter>资源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ast.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="CodeGen.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="test.xxs">
+      <Filter>资源文件</Filter>
+    </Text>
   </ItemGroup>
 </Project>
