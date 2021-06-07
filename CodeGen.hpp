@@ -18,7 +18,7 @@
 #include "llvm/IR/Type.h"
 #include "llvm/IR/Verifier.h"
 
-#include "ast.h"
+#include "ast.hpp"
 #include "parser.h"
 
 

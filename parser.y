@@ -17,14 +17,17 @@
 %code requires {
 	#include <memory>
 	#include <format>
-	#include "ast.h"
+	#include "ast.hpp"
+	#include "error.hpp"
+
 	#define PARAMS std::vector<std::string>
 	#define ASTS std::vector<PAST>
 }
 
 %code {
 	#include <iostream>
-	#include "ast.h"
+	#include "ast.hpp"
+
 	extern xxs::parser::symbol_type yylex();
 }
 
@@ -35,13 +38,17 @@
 %token LPAREN "("  RPAREN ")" LBLOCK "{" RBLOCK "}" SEMICOLON ";" COMMA ","
 %token ETEST ">>"
 
-%left "="
+%right "="
+%left "==" "!="
+%left "<" ">" "<=" ">="
 %left "+" "-"
 %left "*" "/"
 %left "("
 
-%type <std::string> INT FLOAT IDENT
-%type <PAST> expr stmt stmts main
+%type <int> INT
+%type <float> FLOAT
+%type <std::string> IDENT
+%type <PAST> expr stmt stmts
 %type <PARAMS> idents
 %type <ASTS> exprs
 
@@ -49,32 +56,31 @@
 %%
 
 main: stmts YYEOF {
- $$ = new FunctionAst("__main", PARAMS(), $1);
- program = $$;
+	 program = new FunctionAst("__main", PARAMS(), $1);
 }
 ;
 
-stmts: stmt { $$ = new BlockAst(); reinterpret_cast<BlockAst*>($$)->push($1); }
-| stmts stmt { $$ = $1; reinterpret_cast<BlockAst*>($$)->push($2); }
+stmts: stmt 			 { $$ = new BlockAst(); reinterpret_cast<BlockAst*>($$)->push($1); }
+| stmts stmt 			 { $$ = $1; reinterpret_cast<BlockAst*>($$)->push($2); }
 ;
 
-stmt: expr ";" { $$ = $1; }
-| IDENT "=" expr ";" {$$ = new VarAssignAst($1, token::EQ, $3);}
-| "return" expr ";" { $$=new RetAst($2); }
-| "return" ";" { $$=new RetAst(); }
-| ";" { }
+stmt: expr 			 ";"	{ $$ = $1; }
+| IDENT "=" expr ";"  { $$ = new VarAssignAst($IDENT, token::EQ, $expr);}
+| "return" expr  ";"  { $$ = new RetAst($expr); }
+| "return" 			 ";"  { $$ = new RetAst(); }
 ;
 
 
 expr: INT { $$ = new IntAst($1); }
+| "nil" { $$ = new IntAst(NULL); }
 | FLOAT { $$ = new FloatAst($1); }
 | IDENT { $$ = new VarAccessAst($1); }
-| "(" expr ")" {$$ = $2;}
-| "function" IDENT "(" idents ")" "{" stmts "}" { $$ = new FunctionAst($2, M($4), $7); }
-| "function" IDENT "(" idents ")" "{" "}" { $$ = new FunctionAst($2, M($4), new BlockAst()); }
-| "function" "(" idents ")" "{" stmts "}" { $$ = new FunctionAst(M($3), $6); }
-| "function" "(" idents ")" "{" "}" { $$ = new FunctionAst(M($3), new BlockAst()); }
-|	expr "(" exprs ")" { $$ = new CallAst($1, M($3)); }
+| "(" expr[e] ")" {$$ = $e;}
+| "function" IDENT "(" idents[params] ")" "{" stmts "}" { $$ = new FunctionAst($IDENT, M($params), $stmts); }
+| "function" IDENT "(" idents[params] ")" "{" "}" { $$ = new FunctionAst($IDENT, M($params), new BlockAst()); }
+| "function" "(" idents[params] ")" "{" stmts "}" { $$ = new FunctionAst(M($params), $stmts); }
+| "function" "(" idents[params] ")" "{" "}" { $$ = new FunctionAst(M($params), new BlockAst()); }
+|	expr[name] "(" exprs[args] ")" { $$ = new CallAst($name, M($args)); }
 | expr "+" expr {$$ = new BinaryAst(token::PLUS, $1, $3);}
 | expr "-" expr {$$ = new BinaryAst(token::MINUS, $1, $3);}
 | expr "*" expr {$$ = new BinaryAst(token::MUL, $1, $3);}
@@ -95,5 +101,5 @@ exprs:  %empty { $$ = ASTS(); }
 
 void xxs::parser::error(const location_type& loc, const std::string& msg)
 {
-	std::cout << std::format("{} {}:{} {}:{}", msg, loc.begin.line, loc.begin.column, loc.end.line, loc.end.column) << "\n";
+	throw xxs::syntax_error(loc);
 }

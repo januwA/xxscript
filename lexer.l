@@ -11,6 +11,8 @@
 xxs::location loc;
 #define yyterminate() return xxs::parser::make_XXSEOF(loc)
 #define _T(t) return xxs::parser::make_##t(loc)
+#define _IT(t) return xxs::parser::make_##t(std::stoi(yytext), loc)
+#define _FT(t) return xxs::parser::make_##t(std::stof(yytext), loc)
 #define _ST(t) return xxs::parser::make_##t(std::string(yytext, yyleng), loc)
 
 #define YY_USER_ACTION loc.step(); loc.columns(yyleng);
@@ -51,8 +53,8 @@ IDENT   (?i:[a-z][a-z0-9]*)
 "if" { _T(IF); }
 "else" { _T(ELSE); }
 
-{INT} { _ST(INT); }
-{FLOAT} { _ST(FLOAT); }
+{INT} { _IT(INT); }
+{FLOAT} { _FT(FLOAT); }
 {IDENT} { _ST(IDENT); }
 
 

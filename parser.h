@@ -49,11 +49,13 @@
 
 	#include <memory>
 	#include <format>
-	#include "ast.h"
+	#include "ast.hpp"
+	#include "error.hpp"
+
 	#define PARAMS std::vector<std::string>
 	#define ASTS std::vector<PAST>
 
-#line 57 "parser.h"
+#line 59 "parser.h"
 
 
 # include <cstdlib> // std::abort
@@ -190,7 +192,7 @@
 #endif  /* ! defined XXSDEBUG */
 
 namespace xxs {
-#line 194 "parser.h"
+#line 196 "parser.h"
 
 
 
@@ -387,16 +389,19 @@ namespace xxs {
       // idents
       char dummy2[sizeof (PARAMS)];
 
-      // main
       // stmts
       // stmt
       // expr
       char dummy3[sizeof (PAST)];
 
-      // "int"
       // "float"
+      char dummy4[sizeof (float)];
+
+      // "int"
+      char dummy5[sizeof (int)];
+
       // "identifier"
-      char dummy4[sizeof (std::string)];
+      char dummy6[sizeof (std::string)];
     };
 
     /// The size of the largest semantic type.
@@ -569,15 +574,20 @@ namespace xxs {
         value.move< PARAMS > (std::move (that.value));
         break;
 
-      case symbol_kind::S_main: // main
       case symbol_kind::S_stmts: // stmts
       case symbol_kind::S_stmt: // stmt
       case symbol_kind::S_expr: // expr
         value.move< PAST > (std::move (that.value));
         break;
 
-      case symbol_kind::S_INT: // "int"
       case symbol_kind::S_FLOAT: // "float"
+        value.move< float > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_INT: // "int"
+        value.move< int > (std::move (that.value));
+        break;
+
       case symbol_kind::S_IDENT: // "identifier"
         value.move< std::string > (std::move (that.value));
         break;
@@ -648,6 +658,34 @@ namespace xxs {
 #endif
 
 #if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, float&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const float& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, int&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const int& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
       basic_symbol (typename Base::kind_type t, std::string&& v, location_type&& l)
         : Base (t)
         , value (std::move (v))
@@ -691,15 +729,20 @@ switch (yykind)
         value.template destroy< PARAMS > ();
         break;
 
-      case symbol_kind::S_main: // main
       case symbol_kind::S_stmts: // stmts
       case symbol_kind::S_stmt: // stmt
       case symbol_kind::S_expr: // expr
         value.template destroy< PAST > ();
         break;
 
-      case symbol_kind::S_INT: // "int"
       case symbol_kind::S_FLOAT: // "float"
+        value.template destroy< float > ();
+        break;
+
+      case symbol_kind::S_INT: // "int"
+        value.template destroy< int > ();
+        break;
+
       case symbol_kind::S_IDENT: // "identifier"
         value.template destroy< std::string > ();
         break;
@@ -799,6 +842,22 @@ switch (yykind)
 #else
       symbol_type (int tok, const location_type& l)
         : super_type(token_type (tok), l)
+#endif
+      {}
+#if 201103L <= YY_CPLUSPLUS
+      symbol_type (int tok, float v, location_type l)
+        : super_type(token_type (tok), std::move (v), std::move (l))
+#else
+      symbol_type (int tok, const float& v, const location_type& l)
+        : super_type(token_type (tok), v, l)
+#endif
+      {}
+#if 201103L <= YY_CPLUSPLUS
+      symbol_type (int tok, int v, location_type l)
+        : super_type(token_type (tok), std::move (v), std::move (l))
+#else
+      symbol_type (int tok, const int& v, const location_type& l)
+        : super_type(token_type (tok), v, l)
 #endif
       {}
 #if 201103L <= YY_CPLUSPLUS
@@ -983,14 +1042,14 @@ switch (yykind)
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
-      make_INT (std::string v, location_type l)
+      make_INT (int v, location_type l)
       {
         return symbol_type (token::INT, std::move (v), std::move (l));
       }
 #else
       static
       symbol_type
-      make_INT (const std::string& v, const location_type& l)
+      make_INT (const int& v, const location_type& l)
       {
         return symbol_type (token::INT, v, l);
       }
@@ -998,14 +1057,14 @@ switch (yykind)
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
-      make_FLOAT (std::string v, location_type l)
+      make_FLOAT (float v, location_type l)
       {
         return symbol_type (token::FLOAT, std::move (v), std::move (l));
       }
 #else
       static
       symbol_type
-      make_FLOAT (const std::string& v, const location_type& l)
+      make_FLOAT (const float& v, const location_type& l)
       {
         return symbol_type (token::FLOAT, v, l);
       }
@@ -1599,7 +1658,7 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 165,     ///< Last index in yytable_.
+      yylast_ = 175,     ///< Last index in yytable_.
       yynnts_ = 7,  ///< Number of nonterminal symbols.
       yyfinal_ = 19 ///< Termination state number.
     };
@@ -1678,15 +1737,20 @@ switch (yykind)
         value.copy< PARAMS > (YY_MOVE (that.value));
         break;
 
-      case symbol_kind::S_main: // main
       case symbol_kind::S_stmts: // stmts
       case symbol_kind::S_stmt: // stmt
       case symbol_kind::S_expr: // expr
         value.copy< PAST > (YY_MOVE (that.value));
         break;
 
-      case symbol_kind::S_INT: // "int"
       case symbol_kind::S_FLOAT: // "float"
+        value.copy< float > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_INT: // "int"
+        value.copy< int > (YY_MOVE (that.value));
+        break;
+
       case symbol_kind::S_IDENT: // "identifier"
         value.copy< std::string > (YY_MOVE (that.value));
         break;
@@ -1728,15 +1792,20 @@ switch (yykind)
         value.move< PARAMS > (YY_MOVE (s.value));
         break;
 
-      case symbol_kind::S_main: // main
       case symbol_kind::S_stmts: // stmts
       case symbol_kind::S_stmt: // stmt
       case symbol_kind::S_expr: // expr
         value.move< PAST > (YY_MOVE (s.value));
         break;
 
-      case symbol_kind::S_INT: // "int"
       case symbol_kind::S_FLOAT: // "float"
+        value.move< float > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_INT: // "int"
+        value.move< int > (YY_MOVE (s.value));
+        break;
+
       case symbol_kind::S_IDENT: // "identifier"
         value.move< std::string > (YY_MOVE (s.value));
         break;
@@ -1803,7 +1872,7 @@ switch (yykind)
   }
 
 } // xxs
-#line 1807 "parser.h"
+#line 1876 "parser.h"
 
 
 

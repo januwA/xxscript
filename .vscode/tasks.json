@@ -1,0 +1,36 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "win_flex",
+      "type": "shell",
+      "windows": {
+        "command": "win_flex --wincompat -o lexer.cpp lexer.l"
+      }
+    },
+    {
+      "label": "win_bison",
+      "type": "shell",
+      "windows": {
+        "command": "win_bison --no-line -d -o parser.cpp parser.y"
+      }
+    },
+    {
+      "label": "FlexBison Build",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "win_flex",
+        "win_bison"
+      ]
+    },
+    {
+      "label": "test xxs",
+      "type": "shell",
+      "windows": {
+        "command": "cmd.exe /C \"${workspaceFolder}/x64/Release/xxscript.exe ${workspaceFolder}/test.xxs\""
+      }
+    },
+  ]
+}

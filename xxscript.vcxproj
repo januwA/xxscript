@@ -151,8 +151,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ast.cpp" />
-    <ClCompile Include="CodeGen.cpp" />
     <ClCompile Include="lexer.cpp" />
     <ClCompile Include="parser.cpp" />
     <ClCompile Include="xxscript.cpp" />
@@ -187,8 +185,8 @@
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ast.h" />
-    <ClInclude Include="CodeGen.h" />
+    <ClInclude Include="ast.hpp" />
+    <ClInclude Include="CodeGen.hpp" />
     <ClInclude Include="parser.h" />
   </ItemGroup>
   <ItemGroup>

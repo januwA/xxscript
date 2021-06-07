@@ -745,6 +745,8 @@ char *yytext;
 xxs::location loc;
 #define yyterminate() return xxs::parser::make_XXSEOF(loc)
 #define _T(t) return xxs::parser::make_##t(loc)
+#define _IT(t) return xxs::parser::make_##t(std::stoi(yytext), loc)
+#define _FT(t) return xxs::parser::make_##t(std::stof(yytext), loc)
 #define _ST(t) return xxs::parser::make_##t(std::string(yytext, yyleng), loc)
 
 #define YY_USER_ACTION loc.step(); loc.columns(yyleng);
@@ -1205,11 +1207,11 @@ YY_RULE_SETUP
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-{ _ST(INT); }
+{ _IT(INT); }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-{ _ST(FLOAT); }
+{ _FT(FLOAT); }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP

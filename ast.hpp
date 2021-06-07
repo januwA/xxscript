@@ -4,16 +4,16 @@
 #include <vector>
 #include <memory>
 
-
 namespace xxs
 {
 
 #define M(o) std::move(o)
-#define PAST xxs::Ast*
+#define PAST xxs::Ast *
 
-  enum  class AT
+  enum class AT
   {
-    Int, Float,
+    Int,
+    Float,
     VarAccess,
     Binary,
     Call,
@@ -21,6 +21,9 @@ namespace xxs
     Block,
     VarAssign,
     Ret,
+    If,
+    For,
+    While,
   };
   struct Ast
   {
@@ -29,19 +32,18 @@ namespace xxs
 
   struct IntAst : public Ast
   {
-    int num{ 0 };
-    IntAst(std::string_view val) : num(std::stoi(val.data())) {}
+    int num{0};
+    IntAst(int num) : num(num) {}
     AT id() { return AT::Int; }
   };
 
   struct FloatAst : public Ast
   {
-    float num{ 0 };
-    FloatAst(std::string_view val) : num(std::stof(val.data())) {}
+    float num{0};
+    FloatAst(float num) : num(num) {}
     AT id() { return AT::Float; }
   };
 
-  // ∑√Œ ±‰¡ø
   struct VarAccessAst : public Ast
   {
     std::string name;
@@ -54,7 +56,7 @@ namespace xxs
     std::string name;
     int op;
     PAST right;
-    VarAssignAst(std::string name, int op, PAST right) : op(op), name(name), right(right) { }
+    VarAssignAst(std::string name, int op, PAST right) : op(op), name(name), right(right) {}
     ~VarAssignAst() { delete right; }
     AT id() override { return AT::VarAssign; }
   };
@@ -64,8 +66,12 @@ namespace xxs
     int op;
     PAST left;
     PAST right;
-    BinaryAst(int op, PAST left, PAST right) : op(op), left(left), right(right) { }
-    ~BinaryAst() { delete left; delete right; }
+    BinaryAst(int op, PAST left, PAST right) : op(op), left(left), right(right) {}
+    ~BinaryAst()
+    {
+      delete left;
+      delete right;
+    }
     AT id() override { return AT::Binary; }
   };
 
@@ -75,9 +81,11 @@ namespace xxs
     std::vector<PAST> args;
     CallAst(PAST name) : name(name), args(0) {}
     CallAst(PAST name, std::vector<PAST> args) : name(name), args(args) {}
-    ~CallAst() {
+    ~CallAst()
+    {
       delete name;
-      for (auto a : args) delete a;
+      for (auto a : args)
+        delete a;
     }
     AT id() { return AT::Call; }
   };
@@ -98,7 +106,11 @@ namespace xxs
     std::vector<PAST> blocks;
     BlockAst() : blocks(0) {}
     BlockAst(std::vector<PAST> blocks) : blocks(blocks) {}
-    ~BlockAst() { for (auto a : blocks) delete a; }
+    ~BlockAst()
+    {
+      for (auto a : blocks)
+        delete a;
+    }
 
     AT id() { return AT::Block; }
     void push(PAST ast)
@@ -111,8 +123,8 @@ namespace xxs
   {
     PAST val;
     RetAst(PAST val) : val(val) {}
-    RetAst() : val(0) {}
-    ~RetAst() {  delete val; }
+    RetAst() : val(nullptr) {}
+    ~RetAst() { delete val; }
     AT id() { return AT::Ret; }
   };
 
