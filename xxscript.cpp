@@ -17,14 +17,15 @@ int main(int argc, char *argv[])
 
   try
   {
-    xxs::Ast *my_main;
+    xxs::FunctionAst *my_main;
     xxs::parser parser(my_main);
     parser.parse();
 
     if (my_main)
     {
       // printf("ast id %d\n", program->id());
-      xxs::CodeGen cg{reinterpret_cast<xxs::FunctionAst *>(my_main)};
+      xxs::CodeGen cg;
+      cg.init_main(my_main);
       cg.print();
       delete my_main;
     }

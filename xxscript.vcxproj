@@ -187,6 +187,7 @@
   <ItemGroup>
     <ClInclude Include="ast.hpp" />
     <ClInclude Include="CodeGen.hpp" />
+    <ClInclude Include="KaleidoscopeJIT.h" />
     <ClInclude Include="parser.h" />
   </ItemGroup>
   <ItemGroup>

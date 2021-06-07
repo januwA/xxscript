@@ -46,6 +46,9 @@
     <ClInclude Include="CodeGen.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="KaleidoscopeJIT.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="test.xxs">

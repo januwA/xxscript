@@ -7,7 +7,6 @@
 namespace xxs
 {
 
-#define M(o) std::move(o)
 #define PAST xxs::Ast *
 
   enum class AT

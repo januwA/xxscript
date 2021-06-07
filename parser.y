@@ -9,7 +9,7 @@
 %locations
 %define api.prefix {xxs}
 
-%parse-param {PAST& program}
+%parse-param {xxs::FunctionAst *& program}
 /*
 %lex-param {}
 */
@@ -65,6 +65,7 @@ stmts: stmt 			 { $$ = new BlockAst(); reinterpret_cast<BlockAst*>($$)->push($1)
 ;
 
 stmt: expr 			 ";"	{ $$ = $1; }
+| expr 			 					{ $$ = $1; }
 | IDENT "=" expr ";"  { $$ = new VarAssignAst($IDENT, token::EQ, $expr);}
 | "return" expr  ";"  { $$ = new RetAst($expr); }
 | "return" 			 ";"  { $$ = new RetAst(); }
@@ -76,11 +77,11 @@ expr: INT { $$ = new IntAst($1); }
 | FLOAT { $$ = new FloatAst($1); }
 | IDENT { $$ = new VarAccessAst($1); }
 | "(" expr[e] ")" {$$ = $e;}
-| "function" IDENT "(" idents[params] ")" "{" stmts "}" { $$ = new FunctionAst($IDENT, M($params), $stmts); }
-| "function" IDENT "(" idents[params] ")" "{" "}" { $$ = new FunctionAst($IDENT, M($params), new BlockAst()); }
-| "function" "(" idents[params] ")" "{" stmts "}" { $$ = new FunctionAst(M($params), $stmts); }
-| "function" "(" idents[params] ")" "{" "}" { $$ = new FunctionAst(M($params), new BlockAst()); }
-|	expr[name] "(" exprs[args] ")" { $$ = new CallAst($name, M($args)); }
+| "function" IDENT "(" idents[params] ")" "{" stmts "}" { $$ = new FunctionAst($IDENT, std::move($params), $stmts); }
+| "function" IDENT "(" idents[params] ")" "{" "}" { $$ = new FunctionAst($IDENT, std::move($params), new BlockAst()); }
+| "function" "(" idents[params] ")" "{" stmts "}" { $$ = new FunctionAst(std::move($params), $stmts); }
+| "function" "(" idents[params] ")" "{" "}" { $$ = new FunctionAst(std::move($params), new BlockAst()); }
+|	expr[name] "(" exprs[args] ")" { $$ = new CallAst($name, std::move($args)); }
 | expr "+" expr {$$ = new BinaryAst(token::PLUS, $1, $3);}
 | expr "-" expr {$$ = new BinaryAst(token::MINUS, $1, $3);}
 | expr "*" expr {$$ = new BinaryAst(token::MUL, $1, $3);}
@@ -89,12 +90,12 @@ expr: INT { $$ = new IntAst($1); }
 
 idents: %empty { $$ = PARAMS(); }
 |	IDENT { $$ = PARAMS{$1}; }
-|	idents "," IDENT { $$ = M($1); $$.push_back($3); }
+|	idents "," IDENT { $$ = std::move($1); $$.push_back($3); }
 ;
 
 exprs:  %empty { $$ = ASTS(); } 
 | expr { $$ = ASTS{$1}; }
-|	exprs "," expr { $$ = M($1); $$.push_back($3); }
+|	exprs "," expr { $$ = std::move($1); $$.push_back($3); }
 ;
 
 %%

@@ -45,7 +45,6 @@
 #ifndef YY_XXS_PARSER_H_INCLUDED
 # define YY_XXS_PARSER_H_INCLUDED
 // "%code requires" blocks.
-#line 17 "parser.y"
 
 	#include <memory>
 	#include <format>
@@ -55,7 +54,6 @@
 	#define PARAMS std::vector<std::string>
 	#define ASTS std::vector<PAST>
 
-#line 59 "parser.h"
 
 
 # include <cstdlib> // std::abort
@@ -192,7 +190,6 @@
 #endif  /* ! defined XXSDEBUG */
 
 namespace xxs {
-#line 196 "parser.h"
 
 
 
@@ -871,7 +868,7 @@ switch (yykind)
     };
 
     /// Build a parser object.
-    parser (PAST& program_yyarg);
+    parser (xxs::FunctionAst *& program_yyarg);
     virtual ~parser ();
 
 #if 201103L <= YY_CPLUSPLUS
@@ -1665,7 +1662,7 @@ switch (yykind)
 
 
     // User arguments.
-    PAST& program;
+    xxs::FunctionAst *& program;
 
   };
 
@@ -1872,7 +1869,6 @@ switch (yykind)
   }
 
 } // xxs
-#line 1876 "parser.h"
 
 
 
