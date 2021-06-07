@@ -52,8 +52,9 @@ IDENT   (?i:[a-z][a-z0-9]*)
 "return" { _T(RETURN); }
 "if" { _T(IF); }
 "else" { _T(ELSE); }
+"for" { _T(FOR); }
 
-{INT} { _IT(INT); }
+{INT}   { _IT(INT); }
 {FLOAT} { _FT(FLOAT); }
 {IDENT} { _ST(IDENT); }
 

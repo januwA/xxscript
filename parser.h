@@ -399,12 +399,13 @@ namespace xxs {
       char dummy5[sizeof (std::string)];
 
       // stmts
-      // then_1
+      // block_1
+      // block_2
       // else_1
-      // func_end
       char dummy6[sizeof (xxs::StmtsAst*)];
 
       // stmt
+      // for_begin
       // expr_1
       // expr
       // primary
@@ -460,29 +461,30 @@ namespace xxs {
     FUNCTION = 258,                // "function"
     RETURN = 259,                  // "return"
     IF = 260,                      // "if"
-    ELSE = 261,                    // "else"
-    NIL = 262,                     // "nil"
-    INT = 263,                     // "int"
-    FLOAT = 264,                   // "float"
-    IDENT = 265,                   // "identifier"
-    PLUS = 266,                    // "+"
-    MINUS = 267,                   // "-"
-    MUL = 268,                     // "*"
-    DIV = 269,                     // "/"
-    LT = 270,                      // "<"
-    GT = 271,                      // ">"
-    EQ = 272,                      // "="
-    EE = 273,                      // "=="
-    LTE = 274,                     // "<="
-    GTE = 275,                     // ">="
-    NE = 276,                      // "!="
-    LPAREN = 277,                  // "("
-    RPAREN = 278,                  // ")"
-    LBLOCK = 279,                  // "{"
-    RBLOCK = 280,                  // "}"
-    SEMICOLON = 281,               // ";"
-    COMMA = 282,                   // ","
-    ETEST = 283                    // ">>"
+    FOR = 261,                     // "for"
+    ELSE = 262,                    // "else"
+    NIL = 263,                     // "nil"
+    INT = 264,                     // "int"
+    FLOAT = 265,                   // "float"
+    IDENT = 266,                   // "identifier"
+    PLUS = 267,                    // "+"
+    MINUS = 268,                   // "-"
+    MUL = 269,                     // "*"
+    DIV = 270,                     // "/"
+    LT = 271,                      // "<"
+    GT = 272,                      // ">"
+    EQ = 273,                      // "="
+    EE = 274,                      // "=="
+    LTE = 275,                     // "<="
+    GTE = 276,                     // ">="
+    NE = 277,                      // "!="
+    LPAREN = 278,                  // "("
+    RPAREN = 279,                  // ")"
+    LBLOCK = 280,                  // "{"
+    RBLOCK = 281,                  // "}"
+    SEMICOLON = 282,               // ";"
+    COMMA = 283,                   // ","
+    ETEST = 284                    // ">>"
       };
       /// Backward compatibility alias (Bison 3.6).
       typedef token_kind_type yytokentype;
@@ -499,7 +501,7 @@ namespace xxs {
     {
       enum symbol_kind_type
       {
-        YYNTOKENS = 29, ///< Number of tokens.
+        YYNTOKENS = 30, ///< Number of tokens.
         S_YYEMPTY = -2,
         S_YYEOF = 0,                             // "end of file"
         S_YYerror = 1,                           // error
@@ -507,42 +509,44 @@ namespace xxs {
         S_FUNCTION = 3,                          // "function"
         S_RETURN = 4,                            // "return"
         S_IF = 5,                                // "if"
-        S_ELSE = 6,                              // "else"
-        S_NIL = 7,                               // "nil"
-        S_INT = 8,                               // "int"
-        S_FLOAT = 9,                             // "float"
-        S_IDENT = 10,                            // "identifier"
-        S_PLUS = 11,                             // "+"
-        S_MINUS = 12,                            // "-"
-        S_MUL = 13,                              // "*"
-        S_DIV = 14,                              // "/"
-        S_LT = 15,                               // "<"
-        S_GT = 16,                               // ">"
-        S_EQ = 17,                               // "="
-        S_EE = 18,                               // "=="
-        S_LTE = 19,                              // "<="
-        S_GTE = 20,                              // ">="
-        S_NE = 21,                               // "!="
-        S_LPAREN = 22,                           // "("
-        S_RPAREN = 23,                           // ")"
-        S_LBLOCK = 24,                           // "{"
-        S_RBLOCK = 25,                           // "}"
-        S_SEMICOLON = 26,                        // ";"
-        S_COMMA = 27,                            // ","
-        S_ETEST = 28,                            // ">>"
-        S_YYACCEPT = 29,                         // $accept
-        S_main = 30,                             // main
-        S_stmts = 31,                            // stmts
-        S_stmt = 32,                             // stmt
-        S_then_1 = 33,                           // then_1
-        S_else_1 = 34,                           // else_1
-        S_expr_1 = 35,                           // expr_1
-        S_func_begin = 36,                       // func_begin
-        S_func_end = 37,                         // func_end
-        S_expr = 38,                             // expr
-        S_primary = 39,                          // primary
-        S_idents = 40,                           // idents
-        S_exprs = 41                             // exprs
+        S_FOR = 6,                               // "for"
+        S_ELSE = 7,                              // "else"
+        S_NIL = 8,                               // "nil"
+        S_INT = 9,                               // "int"
+        S_FLOAT = 10,                            // "float"
+        S_IDENT = 11,                            // "identifier"
+        S_PLUS = 12,                             // "+"
+        S_MINUS = 13,                            // "-"
+        S_MUL = 14,                              // "*"
+        S_DIV = 15,                              // "/"
+        S_LT = 16,                               // "<"
+        S_GT = 17,                               // ">"
+        S_EQ = 18,                               // "="
+        S_EE = 19,                               // "=="
+        S_LTE = 20,                              // "<="
+        S_GTE = 21,                              // ">="
+        S_NE = 22,                               // "!="
+        S_LPAREN = 23,                           // "("
+        S_RPAREN = 24,                           // ")"
+        S_LBLOCK = 25,                           // "{"
+        S_RBLOCK = 26,                           // "}"
+        S_SEMICOLON = 27,                        // ";"
+        S_COMMA = 28,                            // ","
+        S_ETEST = 29,                            // ">>"
+        S_YYACCEPT = 30,                         // $accept
+        S_main = 31,                             // main
+        S_stmts = 32,                            // stmts
+        S_stmt = 33,                             // stmt
+        S_block_1 = 34,                          // block_1
+        S_block_2 = 35,                          // block_2
+        S_for_begin = 36,                        // for_begin
+        S_else_1 = 37,                           // else_1
+        S_expr_1 = 38,                           // expr_1
+        S_func_begin = 39,                       // func_begin
+        S_expr = 40,                             // expr
+        S_primary = 41,                          // primary
+        S_idents = 42,                           // idents
+        S_exprs = 43                             // exprs
       };
     };
 
@@ -601,13 +605,14 @@ namespace xxs {
         break;
 
       case symbol_kind::S_stmts: // stmts
-      case symbol_kind::S_then_1: // then_1
+      case symbol_kind::S_block_1: // block_1
+      case symbol_kind::S_block_2: // block_2
       case symbol_kind::S_else_1: // else_1
-      case symbol_kind::S_func_end: // func_end
         value.move< xxs::StmtsAst* > (std::move (that.value));
         break;
 
       case symbol_kind::S_stmt: // stmt
+      case symbol_kind::S_for_begin: // for_begin
       case symbol_kind::S_expr_1: // expr_1
       case symbol_kind::S_expr: // expr
       case symbol_kind::S_primary: // primary
@@ -779,13 +784,14 @@ switch (yykind)
         break;
 
       case symbol_kind::S_stmts: // stmts
-      case symbol_kind::S_then_1: // then_1
+      case symbol_kind::S_block_1: // block_1
+      case symbol_kind::S_block_2: // block_2
       case symbol_kind::S_else_1: // else_1
-      case symbol_kind::S_func_end: // func_end
         value.template destroy< xxs::StmtsAst* > ();
         break;
 
       case symbol_kind::S_stmt: // stmt
+      case symbol_kind::S_for_begin: // for_begin
       case symbol_kind::S_expr_1: // expr_1
       case symbol_kind::S_expr: // expr
       case symbol_kind::S_primary: // primary
@@ -916,7 +922,7 @@ switch (yykind)
     };
 
     /// Build a parser object.
-    parser (xxs::FunctionAst *& program_yyarg);
+    parser (xxs::FuncAst *& _main_yyarg);
     virtual ~parser ();
 
 #if 201103L <= YY_CPLUSPLUS
@@ -1052,6 +1058,21 @@ switch (yykind)
       make_IF (const location_type& l)
       {
         return symbol_type (token::IF, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_FOR (location_type l)
+      {
+        return symbol_type (token::FOR, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_FOR (const location_type& l)
+      {
+        return symbol_type (token::FOR, l);
       }
 #endif
 #if 201103L <= YY_CPLUSPLUS
@@ -1443,7 +1464,7 @@ switch (yykind)
     // Tables.
     // YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
     // STATE-NUM.
-    static const short yypact_[];
+    static const signed char yypact_[];
 
     // YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
     // Performed when YYTABLE does not specify something else to do.  Zero
@@ -1703,14 +1724,14 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 241,     ///< Last index in yytable_.
-      yynnts_ = 13,  ///< Number of nonterminal symbols.
-      yyfinal_ = 24 ///< Termination state number.
+      yylast_ = 154,     ///< Last index in yytable_.
+      yynnts_ = 14,  ///< Number of nonterminal symbols.
+      yyfinal_ = 25 ///< Termination state number.
     };
 
 
     // User arguments.
-    xxs::FunctionAst *& program;
+    xxs::FuncAst *& _main;
 
   };
 
@@ -1752,10 +1773,10 @@ switch (yykind)
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
-      25,    26,    27,    28
+      25,    26,    27,    28,    29
     };
     // Last valid token kind.
-    const int code_max = 283;
+    const int code_max = 284;
 
     if (t <= 0)
       return symbol_kind::S_YYEOF;
@@ -1796,13 +1817,14 @@ switch (yykind)
         break;
 
       case symbol_kind::S_stmts: // stmts
-      case symbol_kind::S_then_1: // then_1
+      case symbol_kind::S_block_1: // block_1
+      case symbol_kind::S_block_2: // block_2
       case symbol_kind::S_else_1: // else_1
-      case symbol_kind::S_func_end: // func_end
         value.copy< xxs::StmtsAst* > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_stmt: // stmt
+      case symbol_kind::S_for_begin: // for_begin
       case symbol_kind::S_expr_1: // expr_1
       case symbol_kind::S_expr: // expr
       case symbol_kind::S_primary: // primary
@@ -1860,13 +1882,14 @@ switch (yykind)
         break;
 
       case symbol_kind::S_stmts: // stmts
-      case symbol_kind::S_then_1: // then_1
+      case symbol_kind::S_block_1: // block_1
+      case symbol_kind::S_block_2: // block_2
       case symbol_kind::S_else_1: // else_1
-      case symbol_kind::S_func_end: // func_end
         value.move< xxs::StmtsAst* > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_stmt: // stmt
+      case symbol_kind::S_for_begin: // for_begin
       case symbol_kind::S_expr_1: // expr_1
       case symbol_kind::S_expr: // expr
       case symbol_kind::S_primary: // primary
@@ -1935,7 +1958,7 @@ switch (yykind)
   }
 
 } // xxs
-#line 1939 "parser.h"
+#line 1962 "parser.h"
 
 
 

@@ -6,7 +6,7 @@
 
 namespace xxs
 {
-	typedef  std::vector<std::string> params_t;
+  typedef std::vector<std::string> params_t;
 
   enum class AT
   {
@@ -28,7 +28,7 @@ namespace xxs
     virtual AT id() = 0;
   };
 
-  typedef xxs::Ast* ast_ptr;
+  typedef xxs::Ast *ast_ptr;
 
   struct StmtsAst : public Ast
   {
@@ -48,8 +48,7 @@ namespace xxs
       stmts.push_back(ast);
     }
   };
-  typedef xxs::StmtsAst* stmts_ptr;
-
+  typedef xxs::StmtsAst *stmts_ptr;
 
   struct IntAst : public Ast
   {
@@ -111,18 +110,17 @@ namespace xxs
     AT id() { return AT::Call; }
   };
 
-  struct FunctionAst : public Ast
+  struct FuncAst : public Ast
   {
     std::string name;
     params_t params;
     stmts_ptr body;
 
-    FunctionAst(std::string_view name, params_t params, stmts_ptr body) : name(name.data()), params(params), body(body) {}
-    ~FunctionAst() { delete body; }
+    FuncAst(std::string_view name, params_t params, stmts_ptr body) : name(name.data()), params(params), body(body) {}
+    ~FuncAst() { delete body; }
 
     AT id() { return AT::Function; }
   };
-
 
   struct RetAst : public Ast
   {
@@ -147,6 +145,25 @@ namespace xxs
       delete el;
     }
     AT id() { return AT::If; }
+  };
+
+  struct ForAst : public Ast
+  {
+    ast_ptr   init;
+    ast_ptr   cond;
+    ast_ptr   step;
+    stmts_ptr body;
+
+    ForAst(ast_ptr init, ast_ptr cond, ast_ptr step, stmts_ptr body)
+        : cond(cond), init(init), step(step), body(body) {}
+    ~ForAst()
+    {
+      delete init;
+      delete cond;
+      delete step;
+      delete body;
+    }
+    AT id() { return AT::For; }
   };
 
 }
