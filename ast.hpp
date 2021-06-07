@@ -6,8 +6,7 @@
 
 namespace xxs
 {
-
-#define PAST xxs::Ast *
+	typedef  std::vector<std::string> params_t;
 
   enum class AT
   {
@@ -17,7 +16,7 @@ namespace xxs
     Binary,
     Call,
     Function,
-    Block,
+    Stmts,
     VarAssign,
     Ret,
     If,
@@ -28,6 +27,29 @@ namespace xxs
   {
     virtual AT id() = 0;
   };
+
+  typedef xxs::Ast* ast_ptr;
+
+  struct StmtsAst : public Ast
+  {
+    std::vector<ast_ptr> stmts;
+
+    StmtsAst() : stmts(0) {}
+    StmtsAst(std::vector<ast_ptr> blocks) : stmts(blocks) {}
+    ~StmtsAst()
+    {
+      for (auto a : stmts)
+        delete a;
+    }
+
+    AT id() { return AT::Stmts; }
+    void push(ast_ptr ast)
+    {
+      stmts.push_back(ast);
+    }
+  };
+  typedef xxs::StmtsAst* stmts_ptr;
+
 
   struct IntAst : public Ast
   {
@@ -54,8 +76,8 @@ namespace xxs
   {
     std::string name;
     int op;
-    PAST right;
-    VarAssignAst(std::string name, int op, PAST right) : op(op), name(name), right(right) {}
+    ast_ptr right;
+    VarAssignAst(std::string name, int op, ast_ptr right) : op(op), name(name), right(right) {}
     ~VarAssignAst() { delete right; }
     AT id() override { return AT::VarAssign; }
   };
@@ -63,9 +85,9 @@ namespace xxs
   struct BinaryAst : public Ast
   {
     int op;
-    PAST left;
-    PAST right;
-    BinaryAst(int op, PAST left, PAST right) : op(op), left(left), right(right) {}
+    ast_ptr left;
+    ast_ptr right;
+    BinaryAst(int op, ast_ptr left, ast_ptr right) : op(op), left(left), right(right) {}
     ~BinaryAst()
     {
       delete left;
@@ -76,10 +98,10 @@ namespace xxs
 
   struct CallAst : public Ast
   {
-    PAST name;
-    std::vector<PAST> args;
-    CallAst(PAST name) : name(name), args(0) {}
-    CallAst(PAST name, std::vector<PAST> args) : name(name), args(args) {}
+    ast_ptr name;
+    std::vector<ast_ptr> args;
+    CallAst(ast_ptr name) : name(name), args(0) {}
+    CallAst(ast_ptr name, std::vector<ast_ptr> args) : name(name), args(args) {}
     ~CallAst()
     {
       delete name;
@@ -92,39 +114,39 @@ namespace xxs
   struct FunctionAst : public Ast
   {
     std::string name;
-    std::vector<std::string> params;
-    PAST body;
-    FunctionAst(std::string_view name, std::vector<std::string> params, PAST body) : name(name.data()), params(params), body(body) {}
-    FunctionAst(std::vector<std::string> params, PAST body) : name(""), params(params), body(body) {}
+    params_t params;
+    stmts_ptr body;
+
+    FunctionAst(std::string_view name, params_t params, stmts_ptr body) : name(name.data()), params(params), body(body) {}
     ~FunctionAst() { delete body; }
+
     AT id() { return AT::Function; }
   };
 
-  struct BlockAst : public Ast
-  {
-    std::vector<PAST> blocks;
-    BlockAst() : blocks(0) {}
-    BlockAst(std::vector<PAST> blocks) : blocks(blocks) {}
-    ~BlockAst()
-    {
-      for (auto a : blocks)
-        delete a;
-    }
-
-    AT id() { return AT::Block; }
-    void push(PAST ast)
-    {
-      blocks.push_back(ast);
-    }
-  };
 
   struct RetAst : public Ast
   {
-    PAST val;
-    RetAst(PAST val) : val(val) {}
+    ast_ptr val;
+    RetAst(ast_ptr val) : val(val) {}
     RetAst() : val(nullptr) {}
     ~RetAst() { delete val; }
     AT id() { return AT::Ret; }
+  };
+
+  struct IfAst : public Ast
+  {
+    ast_ptr cond;
+    stmts_ptr th;
+    stmts_ptr el;
+
+    IfAst(ast_ptr cond, stmts_ptr th, stmts_ptr el) : cond(cond), th(th), el(el) {}
+    ~IfAst()
+    {
+      delete cond;
+      delete th;
+      delete el;
+    }
+    AT id() { return AT::If; }
   };
 
 }

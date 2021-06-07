@@ -45,15 +45,16 @@
 #ifndef YY_XXS_PARSER_H_INCLUDED
 # define YY_XXS_PARSER_H_INCLUDED
 // "%code requires" blocks.
+#line 17 "parser.y"
 
 	#include <memory>
 	#include <format>
 	#include "ast.hpp"
 	#include "error.hpp"
 
-	#define PARAMS std::vector<std::string>
-	#define ASTS std::vector<PAST>
+	typedef  std::vector<xxs::ast_ptr> asts_t;
 
+#line 58 "parser.h"
 
 
 # include <cstdlib> // std::abort
@@ -190,6 +191,7 @@
 #endif  /* ! defined XXSDEBUG */
 
 namespace xxs {
+#line 195 "parser.h"
 
 
 
@@ -381,24 +383,32 @@ namespace xxs {
     union union_type
     {
       // exprs
-      char dummy1[sizeof (ASTS)];
-
-      // idents
-      char dummy2[sizeof (PARAMS)];
-
-      // stmts
-      // stmt
-      // expr
-      char dummy3[sizeof (PAST)];
+      char dummy1[sizeof (asts_t)];
 
       // "float"
-      char dummy4[sizeof (float)];
+      char dummy2[sizeof (float)];
 
       // "int"
-      char dummy5[sizeof (int)];
+      char dummy3[sizeof (int)];
+
+      // idents
+      char dummy4[sizeof (params_t)];
 
       // "identifier"
-      char dummy6[sizeof (std::string)];
+      // func_begin
+      char dummy5[sizeof (std::string)];
+
+      // stmts
+      // then_1
+      // else_1
+      // func_end
+      char dummy6[sizeof (xxs::StmtsAst*)];
+
+      // stmt
+      // expr_1
+      // expr
+      // primary
+      char dummy7[sizeof (xxs::ast_ptr)];
     };
 
     /// The size of the largest semantic type.
@@ -524,9 +534,15 @@ namespace xxs {
         S_main = 30,                             // main
         S_stmts = 31,                            // stmts
         S_stmt = 32,                             // stmt
-        S_expr = 33,                             // expr
-        S_idents = 34,                           // idents
-        S_exprs = 35                             // exprs
+        S_then_1 = 33,                           // then_1
+        S_else_1 = 34,                           // else_1
+        S_expr_1 = 35,                           // expr_1
+        S_func_begin = 36,                       // func_begin
+        S_func_end = 37,                         // func_end
+        S_expr = 38,                             // expr
+        S_primary = 39,                          // primary
+        S_idents = 40,                           // idents
+        S_exprs = 41                             // exprs
       };
     };
 
@@ -564,17 +580,7 @@ namespace xxs {
         switch (this->kind ())
     {
       case symbol_kind::S_exprs: // exprs
-        value.move< ASTS > (std::move (that.value));
-        break;
-
-      case symbol_kind::S_idents: // idents
-        value.move< PARAMS > (std::move (that.value));
-        break;
-
-      case symbol_kind::S_stmts: // stmts
-      case symbol_kind::S_stmt: // stmt
-      case symbol_kind::S_expr: // expr
-        value.move< PAST > (std::move (that.value));
+        value.move< asts_t > (std::move (that.value));
         break;
 
       case symbol_kind::S_FLOAT: // "float"
@@ -585,8 +591,27 @@ namespace xxs {
         value.move< int > (std::move (that.value));
         break;
 
+      case symbol_kind::S_idents: // idents
+        value.move< params_t > (std::move (that.value));
+        break;
+
       case symbol_kind::S_IDENT: // "identifier"
+      case symbol_kind::S_func_begin: // func_begin
         value.move< std::string > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_stmts: // stmts
+      case symbol_kind::S_then_1: // then_1
+      case symbol_kind::S_else_1: // else_1
+      case symbol_kind::S_func_end: // func_end
+        value.move< xxs::StmtsAst* > (std::move (that.value));
+        break;
+
+      case symbol_kind::S_stmt: // stmt
+      case symbol_kind::S_expr_1: // expr_1
+      case symbol_kind::S_expr: // expr
+      case symbol_kind::S_primary: // primary
+        value.move< xxs::ast_ptr > (std::move (that.value));
         break;
 
       default:
@@ -613,41 +638,13 @@ namespace xxs {
 #endif
 
 #if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, ASTS&& v, location_type&& l)
+      basic_symbol (typename Base::kind_type t, asts_t&& v, location_type&& l)
         : Base (t)
         , value (std::move (v))
         , location (std::move (l))
       {}
 #else
-      basic_symbol (typename Base::kind_type t, const ASTS& v, const location_type& l)
-        : Base (t)
-        , value (v)
-        , location (l)
-      {}
-#endif
-
-#if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, PARAMS&& v, location_type&& l)
-        : Base (t)
-        , value (std::move (v))
-        , location (std::move (l))
-      {}
-#else
-      basic_symbol (typename Base::kind_type t, const PARAMS& v, const location_type& l)
-        : Base (t)
-        , value (v)
-        , location (l)
-      {}
-#endif
-
-#if 201103L <= YY_CPLUSPLUS
-      basic_symbol (typename Base::kind_type t, PAST&& v, location_type&& l)
-        : Base (t)
-        , value (std::move (v))
-        , location (std::move (l))
-      {}
-#else
-      basic_symbol (typename Base::kind_type t, const PAST& v, const location_type& l)
+      basic_symbol (typename Base::kind_type t, const asts_t& v, const location_type& l)
         : Base (t)
         , value (v)
         , location (l)
@@ -683,6 +680,20 @@ namespace xxs {
 #endif
 
 #if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, params_t&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const params_t& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
       basic_symbol (typename Base::kind_type t, std::string&& v, location_type&& l)
         : Base (t)
         , value (std::move (v))
@@ -690,6 +701,34 @@ namespace xxs {
       {}
 #else
       basic_symbol (typename Base::kind_type t, const std::string& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, xxs::StmtsAst*&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const xxs::StmtsAst*& v, const location_type& l)
+        : Base (t)
+        , value (v)
+        , location (l)
+      {}
+#endif
+
+#if 201103L <= YY_CPLUSPLUS
+      basic_symbol (typename Base::kind_type t, xxs::ast_ptr&& v, location_type&& l)
+        : Base (t)
+        , value (std::move (v))
+        , location (std::move (l))
+      {}
+#else
+      basic_symbol (typename Base::kind_type t, const xxs::ast_ptr& v, const location_type& l)
         : Base (t)
         , value (v)
         , location (l)
@@ -719,17 +758,7 @@ namespace xxs {
 switch (yykind)
     {
       case symbol_kind::S_exprs: // exprs
-        value.template destroy< ASTS > ();
-        break;
-
-      case symbol_kind::S_idents: // idents
-        value.template destroy< PARAMS > ();
-        break;
-
-      case symbol_kind::S_stmts: // stmts
-      case symbol_kind::S_stmt: // stmt
-      case symbol_kind::S_expr: // expr
-        value.template destroy< PAST > ();
+        value.template destroy< asts_t > ();
         break;
 
       case symbol_kind::S_FLOAT: // "float"
@@ -740,8 +769,27 @@ switch (yykind)
         value.template destroy< int > ();
         break;
 
+      case symbol_kind::S_idents: // idents
+        value.template destroy< params_t > ();
+        break;
+
       case symbol_kind::S_IDENT: // "identifier"
+      case symbol_kind::S_func_begin: // func_begin
         value.template destroy< std::string > ();
+        break;
+
+      case symbol_kind::S_stmts: // stmts
+      case symbol_kind::S_then_1: // then_1
+      case symbol_kind::S_else_1: // else_1
+      case symbol_kind::S_func_end: // func_end
+        value.template destroy< xxs::StmtsAst* > ();
+        break;
+
+      case symbol_kind::S_stmt: // stmt
+      case symbol_kind::S_expr_1: // expr_1
+      case symbol_kind::S_expr: // expr
+      case symbol_kind::S_primary: // primary
+        value.template destroy< xxs::ast_ptr > ();
         break;
 
       default:
@@ -1655,9 +1703,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 175,     ///< Last index in yytable_.
-      yynnts_ = 7,  ///< Number of nonterminal symbols.
-      yyfinal_ = 19 ///< Termination state number.
+      yylast_ = 241,     ///< Last index in yytable_.
+      yynnts_ = 13,  ///< Number of nonterminal symbols.
+      yyfinal_ = 24 ///< Termination state number.
     };
 
 
@@ -1727,17 +1775,7 @@ switch (yykind)
     switch (this->kind ())
     {
       case symbol_kind::S_exprs: // exprs
-        value.copy< ASTS > (YY_MOVE (that.value));
-        break;
-
-      case symbol_kind::S_idents: // idents
-        value.copy< PARAMS > (YY_MOVE (that.value));
-        break;
-
-      case symbol_kind::S_stmts: // stmts
-      case symbol_kind::S_stmt: // stmt
-      case symbol_kind::S_expr: // expr
-        value.copy< PAST > (YY_MOVE (that.value));
+        value.copy< asts_t > (YY_MOVE (that.value));
         break;
 
       case symbol_kind::S_FLOAT: // "float"
@@ -1748,8 +1786,27 @@ switch (yykind)
         value.copy< int > (YY_MOVE (that.value));
         break;
 
+      case symbol_kind::S_idents: // idents
+        value.copy< params_t > (YY_MOVE (that.value));
+        break;
+
       case symbol_kind::S_IDENT: // "identifier"
+      case symbol_kind::S_func_begin: // func_begin
         value.copy< std::string > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_stmts: // stmts
+      case symbol_kind::S_then_1: // then_1
+      case symbol_kind::S_else_1: // else_1
+      case symbol_kind::S_func_end: // func_end
+        value.copy< xxs::StmtsAst* > (YY_MOVE (that.value));
+        break;
+
+      case symbol_kind::S_stmt: // stmt
+      case symbol_kind::S_expr_1: // expr_1
+      case symbol_kind::S_expr: // expr
+      case symbol_kind::S_primary: // primary
+        value.copy< xxs::ast_ptr > (YY_MOVE (that.value));
         break;
 
       default:
@@ -1782,17 +1839,7 @@ switch (yykind)
     switch (this->kind ())
     {
       case symbol_kind::S_exprs: // exprs
-        value.move< ASTS > (YY_MOVE (s.value));
-        break;
-
-      case symbol_kind::S_idents: // idents
-        value.move< PARAMS > (YY_MOVE (s.value));
-        break;
-
-      case symbol_kind::S_stmts: // stmts
-      case symbol_kind::S_stmt: // stmt
-      case symbol_kind::S_expr: // expr
-        value.move< PAST > (YY_MOVE (s.value));
+        value.move< asts_t > (YY_MOVE (s.value));
         break;
 
       case symbol_kind::S_FLOAT: // "float"
@@ -1803,8 +1850,27 @@ switch (yykind)
         value.move< int > (YY_MOVE (s.value));
         break;
 
+      case symbol_kind::S_idents: // idents
+        value.move< params_t > (YY_MOVE (s.value));
+        break;
+
       case symbol_kind::S_IDENT: // "identifier"
+      case symbol_kind::S_func_begin: // func_begin
         value.move< std::string > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_stmts: // stmts
+      case symbol_kind::S_then_1: // then_1
+      case symbol_kind::S_else_1: // else_1
+      case symbol_kind::S_func_end: // func_end
+        value.move< xxs::StmtsAst* > (YY_MOVE (s.value));
+        break;
+
+      case symbol_kind::S_stmt: // stmt
+      case symbol_kind::S_expr_1: // expr_1
+      case symbol_kind::S_expr: // expr
+      case symbol_kind::S_primary: // primary
+        value.move< xxs::ast_ptr > (YY_MOVE (s.value));
         break;
 
       default:
@@ -1869,6 +1935,7 @@ switch (yykind)
   }
 
 } // xxs
+#line 1939 "parser.h"
 
 
 

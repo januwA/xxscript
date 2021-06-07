@@ -20,8 +20,7 @@
 	#include "ast.hpp"
 	#include "error.hpp"
 
-	#define PARAMS std::vector<std::string>
-	#define ASTS std::vector<PAST>
+	typedef  std::vector<xxs::ast_ptr> asts_t;
 }
 
 %code {
@@ -47,55 +46,82 @@
 
 %type <int> INT
 %type <float> FLOAT
-%type <std::string> IDENT
-%type <PAST> expr stmt stmts
-%type <PARAMS> idents
-%type <ASTS> exprs
+%type <std::string> IDENT func_begin
+%type <xxs::ast_ptr> primary expr expr_1 stmt 
+%type <xxs::StmtsAst*> stmts then_1 else_1 func_end
+%type <params_t> idents
+%type <asts_t> exprs
 
 %start main
 %%
 
-main: stmts YYEOF {
-	 program = new FunctionAst("__main", PARAMS(), $1);
-}
+main: stmts YYEOF {  program = new FunctionAst("__main", params_t(), $1); }
 ;
 
-stmts: stmt 			 { $$ = new BlockAst(); reinterpret_cast<BlockAst*>($$)->push($1); }
-| stmts stmt 			 { $$ = $1; reinterpret_cast<BlockAst*>($$)->push($2); }
+stmts: stmt 			 		{ $$ = new StmtsAst(); $$->push($1); }
+| 		stmts stmt 			 { $$ = $1; $$->push($2); }
 ;
 
-stmt: expr 			 ";"	{ $$ = $1; }
-| expr 			 					{ $$ = $1; }
-| IDENT "=" expr ";"  { $$ = new VarAssignAst($IDENT, token::EQ, $expr);}
-| "return" expr  ";"  { $$ = new RetAst($expr); }
-| "return" 			 ";"  { $$ = new RetAst(); }
+stmt: expr_1 			 ";"									{ $$ = $1; }
+| 		expr_1 			 											{ $$ = $1; }
+| 		IDENT "=" expr_1 ";"  						{ $$ = new VarAssignAst($IDENT, token::EQ, $3);}
+| 		"return" expr_1  ";"  						{ $$ = new RetAst($2); }
+| 		"return" 			 ";"    						{ $$ = new RetAst(); }
+| 		"if" "(" expr ")" then_1 else_1  	{ $$ = new IfAst($expr, $then_1, $else_1); }
 ;
 
-
-expr: INT { $$ = new IntAst($1); }
-| "nil" { $$ = new IntAst(NULL); }
-| FLOAT { $$ = new FloatAst($1); }
-| IDENT { $$ = new VarAccessAst($1); }
-| "(" expr[e] ")" {$$ = $e;}
-| "function" IDENT "(" idents[params] ")" "{" stmts "}" { $$ = new FunctionAst($IDENT, std::move($params), $stmts); }
-| "function" IDENT "(" idents[params] ")" "{" "}" { $$ = new FunctionAst($IDENT, std::move($params), new BlockAst()); }
-| "function" "(" idents[params] ")" "{" stmts "}" { $$ = new FunctionAst(std::move($params), $stmts); }
-| "function" "(" idents[params] ")" "{" "}" { $$ = new FunctionAst(std::move($params), new BlockAst()); }
-|	expr[name] "(" exprs[args] ")" { $$ = new CallAst($name, std::move($args)); }
-| expr "+" expr {$$ = new BinaryAst(token::PLUS, $1, $3);}
-| expr "-" expr {$$ = new BinaryAst(token::MINUS, $1, $3);}
-| expr "*" expr {$$ = new BinaryAst(token::MUL, $1, $3);}
-| expr "/" expr {$$ = new BinaryAst(token::DIV, $1, $3);}
+then_1: "{" stmts "}"	  { $$ = $2; 						   }
+| 			"{" 			"}"   { $$ = new StmtsAst();   }
+|				stmt						{	$$ = new StmtsAst({$stmt}); }
 ;
 
-idents: %empty { $$ = PARAMS(); }
-|	IDENT { $$ = PARAMS{$1}; }
-|	idents "," IDENT { $$ = std::move($1); $$.push_back($3); }
+else_1: %empty 									{ $$ = new StmtsAst(); 				}
+| 			"else" "{" stmts "}"  	{ $$ = $stmts; 								}
+| 			"else" "{"  		 "}"  	{ $$ = new StmtsAst();  			}
+|				"else" stmt  						{ $$ = new StmtsAst({$stmt}); }
 ;
 
-exprs:  %empty { $$ = ASTS(); } 
-| expr { $$ = ASTS{$1}; }
-|	exprs "," expr { $$ = std::move($1); $$.push_back($3); }
+expr_1: expr 														{ $$ = $1; 																		 }
+| 			func_begin idents func_end 			{ $$ = new FunctionAst($1, std::move($2), $3); }
+;
+
+func_begin: "function" IDENT "("	  { $$ = $2; 						}
+|						"function" 			 "("		{ $$ = ""; 						}
+;
+
+func_end: ")" "{" stmts "}"						{ $$ = $stmts; 				 }
+| 				")" "{" 			"}"						{ $$ = new StmtsAst(); }
+;
+
+expr: primary 													{ $$ = $primary;															}
+| 		"(" expr_1 ")" 										{ $$ = $expr_1; 															}
+|			expr[name] "(" exprs[args] ")" 		{ $$ = new CallAst($name, std::move($args)); 	}
+| 		expr "+" expr 										{ $$ = new BinaryAst(token::PLUS, $1, $3);		}
+| 		expr "-" expr 										{ $$ = new BinaryAst(token::MINUS, $1, $3);		}
+| 		expr "*" expr 										{ $$ = new BinaryAst(token::MUL, $1, $3);			}
+| 		expr "/" expr 										{ $$ = new BinaryAst(token::DIV, $1, $3);			}
+| 		expr ">" expr 										{ $$ = new BinaryAst(token::GT, $1, $3);			}
+| 		expr "<" expr 										{ $$ = new BinaryAst(token::LT, $1, $3);			}
+| 		expr ">=" expr 										{ $$ = new BinaryAst(token::GTE, $1, $3);			}
+| 		expr "<=" expr 										{ $$ = new BinaryAst(token::LTE, $1, $3);			}
+| 		expr "==" expr 										{ $$ = new BinaryAst(token::EE, $1, $3);			}
+| 		expr "!=" expr 										{ $$ = new BinaryAst(token::NE, $1, $3);			}
+;
+
+primary: INT 					{ $$ = new IntAst($1);		  	}
+| 			"nil" 				{ $$ = new IntAst(NULL); 			}		
+| 			FLOAT 				{ $$ = new FloatAst($1);		 	}
+| 			IDENT 				{ $$ = new VarAccessAst($1);	}
+;
+
+idents: %empty 						{ $$ = params_t(); 										  }
+|				IDENT 						{ $$ = params_t{$1}; 										}
+|				idents "," IDENT  { $$ = std::move($1); $$.push_back($3); }
+;
+
+exprs:  %empty 					{ $$ = asts_t(); 											  } 
+| 			expr 						{ $$ = asts_t{$1}; 											}
+|				exprs "," expr 	{ $$ = std::move($1); $$.push_back($3); }
 ;
 
 %%
