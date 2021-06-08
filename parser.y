@@ -34,7 +34,7 @@
   extern xxs::parser::symbol_type yylex();
 }
 
-%token FUNCTION "function" RETURN "return" IF "if" FOR "for" ELSE "else" NIL "nil"
+%token FUNCTION "function" RETURN "return" IF "if" FOR "for" ELSE "else" NIL "nil" WHILE "while"
 %token INT "int" FLOAT "float" IDENT "identifier"
 %token PLUS "+" MINUS "-" MUL "*" DIV "/" PPLUS "++" MMINUS "--"
 %token LT "<" GT ">" EQ "=" EE "==" LTE "<=" GTE ">=" NE "!="
@@ -52,7 +52,7 @@
 %type <int> INT
 %type <float> FLOAT
 %type <std::string> IDENT func_begin
-%type <xxs::ast_ptr> primary expr expr_1 stmt  for_begin
+%type <xxs::ast_ptr> primary expr expr_1 stmt  for_begin for_cond for_step
 %type <xxs::StmtsAst*> stmts else_1 block_1 block_2
 %type <params_t> idents
 %type <asts_t> exprs
@@ -73,7 +73,8 @@ stmt: expr_1 			        																  { $$ = $1; 																				}
 | 		"return" expr_1  ";"  													      { $$ = new RetAst($2); 														}
 | 		"return" 			   ";"    													    { $$ = new RetAst(); 															}
 | 		"if" "(" expr_1 ")" block_2 else_1  								  { $$ = new IfAst($3, $block_2, $else_1); 				  }
-| 		for_begin expr_1 ";" expr_1[step] ")" block_2  	      { $$ = new ForAst($1, $2, $step, $block_2);       }
+| 		for_begin for_cond ";" for_step ")" block_2  	        { $$ = new ForAst($1, $2, $4, $block_2);          }
+|     "while" "(" expr_1[cond] ")" block_2                  { $$ = new ForAst(nullptr, $cond, nullptr, $block_2);}
 ;
 
 block_1:	"{" stmts "}"																      { $$ = $stmts;                                    }
@@ -84,7 +85,17 @@ block_2:	block_1 																		      { $$ = $1; }
 | 				stmt  							  											      { $$ = new StmtsAst({ $1 });                      }
 ;
 
+
 for_begin: "for" "(" expr_1 ";" 										        { $$ = $expr_1;                                   }
+|          "for" "("        ";" 										        { $$ = nullptr;                                   }
+;
+
+for_cond: expr_1    { $$ = $1; }
+|         %empty    { $$ = nullptr; }
+;
+
+for_step: expr_1    { $$ = $1; }
+|         %empty    { $$ = nullptr; }
 ;
 
 else_1: %empty 																			        { $$ = new StmtsAst(); 														}
@@ -127,7 +138,7 @@ primary: INT 																					      { $$ = new IntAst($1);		  											}
 
 idents: %empty 																				      { $$ = params_t(); 										  					}
 |				IDENT 																				      { $$ = params_t{$1}; 															}
-|				idents "," IDENT  														      { $$ = M($1); $$.push_back($3); 					        }
+|       idents "," IDENT  														      { $$ = M($1); $$.push_back($3); 					        }
 ;
 
 exprs:  %empty 																				      { $$ = asts_t(); 											  					}

@@ -237,7 +237,8 @@ namespace xxs
 
     Value *cg_stmts(StmtsAst *ast, BasicBlock *BB)
     {
-      if(ast->stmts.empty()) return b->getInt32(0);
+      if (ast->stmts.empty())
+        return b->getInt32(0);
       b->SetInsertPoint(BB);
 
       Value *v = nullptr;
@@ -295,23 +296,28 @@ namespace xxs
       auto parentBB = b->GetInsertBlock();
 
       // 初始化init表达式
-      codegen(ast->init);
+      if (ast->init)
+        codegen(ast->init);
 
       // 进入loop循环
       auto LoopBB = BasicBlock::Create(*ctx, "loop", f);
       auto LoopBodyBB = BasicBlock::Create(*ctx, "loopBody", f);
+      auto LoopStepBB = BasicBlock::Create(*ctx, "loopStep", f);
       auto LoopEndBB = BasicBlock::Create(*ctx, "loopEnd", f);
 
       b->CreateBr(LoopBB);
       b->SetInsertPoint(LoopBB);
 
-      auto cond = codegen(ast->cond);
+      auto cond = ast->cond ? codegen(ast->cond) : b->getInt1(1);
       b->CreateCondBr(cond, LoopBodyBB, LoopEndBB);
 
       b->SetInsertPoint(LoopBodyBB);
       codegen(ast->body);
-      codegen(ast->step);
+      b->CreateBr(LoopStepBB);
 
+      b->SetInsertPoint(LoopStepBB);
+      if (ast->step)
+        codegen(ast->step);
       b->CreateBr(LoopBB);
 
       b->SetInsertPoint(LoopEndBB);

@@ -45,7 +45,6 @@
 #ifndef YY_XXS_PARSER_H_INCLUDED
 # define YY_XXS_PARSER_H_INCLUDED
 // "%code requires" blocks.
-#line 17 "parser.y"
 
   #include <memory>
   #include <format>
@@ -53,12 +52,11 @@
   #include "error.hpp"
 
   typedef  std::vector<xxs::ast_ptr> asts_t;
-  
+
   #define M(o) std::move(o)
   #define BINARY(op) yylhs.value.as < xxs::ast_ptr > () = new BinaryAst(token::op,  yystack_[0].value.as < xxs::ast_ptr > (),  yystack_[2].value.as < xxs::ast_ptr > ())
   #define IPPMM(i, op) new VarAssignAst( yystack_[i].value.as<std::string>(), token::EQ, new BinaryAst(token::PLUS, new VarAccessAst(yystack_[i].value.as<std::string>()), new IntAst(1)) )
 
-#line 62 "parser.h"
 
 
 # include <cstdlib> // std::abort
@@ -195,7 +193,6 @@
 #endif  /* ! defined XXSDEBUG */
 
 namespace xxs {
-#line 199 "parser.h"
 
 
 
@@ -410,6 +407,8 @@ namespace xxs {
 
       // stmt
       // for_begin
+      // for_cond
+      // for_step
       // expr_1
       // expr
       // primary
@@ -468,29 +467,30 @@ namespace xxs {
     FOR = 261,                     // "for"
     ELSE = 262,                    // "else"
     NIL = 263,                     // "nil"
-    INT = 264,                     // "int"
-    FLOAT = 265,                   // "float"
-    IDENT = 266,                   // "identifier"
-    PLUS = 267,                    // "+"
-    MINUS = 268,                   // "-"
-    MUL = 269,                     // "*"
-    DIV = 270,                     // "/"
-    PPLUS = 271,                   // "++"
-    MMINUS = 272,                  // "--"
-    LT = 273,                      // "<"
-    GT = 274,                      // ">"
-    EQ = 275,                      // "="
-    EE = 276,                      // "=="
-    LTE = 277,                     // "<="
-    GTE = 278,                     // ">="
-    NE = 279,                      // "!="
-    LPAREN = 280,                  // "("
-    RPAREN = 281,                  // ")"
-    LBLOCK = 282,                  // "{"
-    RBLOCK = 283,                  // "}"
-    SEMICOLON = 284,               // ";"
-    COMMA = 285,                   // ","
-    ETEST = 286                    // ">>"
+    WHILE = 264,                   // "while"
+    INT = 265,                     // "int"
+    FLOAT = 266,                   // "float"
+    IDENT = 267,                   // "identifier"
+    PLUS = 268,                    // "+"
+    MINUS = 269,                   // "-"
+    MUL = 270,                     // "*"
+    DIV = 271,                     // "/"
+    PPLUS = 272,                   // "++"
+    MMINUS = 273,                  // "--"
+    LT = 274,                      // "<"
+    GT = 275,                      // ">"
+    EQ = 276,                      // "="
+    EE = 277,                      // "=="
+    LTE = 278,                     // "<="
+    GTE = 279,                     // ">="
+    NE = 280,                      // "!="
+    LPAREN = 281,                  // "("
+    RPAREN = 282,                  // ")"
+    LBLOCK = 283,                  // "{"
+    RBLOCK = 284,                  // "}"
+    SEMICOLON = 285,               // ";"
+    COMMA = 286,                   // ","
+    ETEST = 287                    // ">>"
       };
       /// Backward compatibility alias (Bison 3.6).
       typedef token_kind_type yytokentype;
@@ -507,7 +507,7 @@ namespace xxs {
     {
       enum symbol_kind_type
       {
-        YYNTOKENS = 32, ///< Number of tokens.
+        YYNTOKENS = 33, ///< Number of tokens.
         S_YYEMPTY = -2,
         S_YYEOF = 0,                             // "end of file"
         S_YYerror = 1,                           // error
@@ -518,43 +518,46 @@ namespace xxs {
         S_FOR = 6,                               // "for"
         S_ELSE = 7,                              // "else"
         S_NIL = 8,                               // "nil"
-        S_INT = 9,                               // "int"
-        S_FLOAT = 10,                            // "float"
-        S_IDENT = 11,                            // "identifier"
-        S_PLUS = 12,                             // "+"
-        S_MINUS = 13,                            // "-"
-        S_MUL = 14,                              // "*"
-        S_DIV = 15,                              // "/"
-        S_PPLUS = 16,                            // "++"
-        S_MMINUS = 17,                           // "--"
-        S_LT = 18,                               // "<"
-        S_GT = 19,                               // ">"
-        S_EQ = 20,                               // "="
-        S_EE = 21,                               // "=="
-        S_LTE = 22,                              // "<="
-        S_GTE = 23,                              // ">="
-        S_NE = 24,                               // "!="
-        S_LPAREN = 25,                           // "("
-        S_RPAREN = 26,                           // ")"
-        S_LBLOCK = 27,                           // "{"
-        S_RBLOCK = 28,                           // "}"
-        S_SEMICOLON = 29,                        // ";"
-        S_COMMA = 30,                            // ","
-        S_ETEST = 31,                            // ">>"
-        S_YYACCEPT = 32,                         // $accept
-        S_main = 33,                             // main
-        S_stmts = 34,                            // stmts
-        S_stmt = 35,                             // stmt
-        S_block_1 = 36,                          // block_1
-        S_block_2 = 37,                          // block_2
-        S_for_begin = 38,                        // for_begin
-        S_else_1 = 39,                           // else_1
-        S_expr_1 = 40,                           // expr_1
-        S_func_begin = 41,                       // func_begin
-        S_expr = 42,                             // expr
-        S_primary = 43,                          // primary
-        S_idents = 44,                           // idents
-        S_exprs = 45                             // exprs
+        S_WHILE = 9,                             // "while"
+        S_INT = 10,                              // "int"
+        S_FLOAT = 11,                            // "float"
+        S_IDENT = 12,                            // "identifier"
+        S_PLUS = 13,                             // "+"
+        S_MINUS = 14,                            // "-"
+        S_MUL = 15,                              // "*"
+        S_DIV = 16,                              // "/"
+        S_PPLUS = 17,                            // "++"
+        S_MMINUS = 18,                           // "--"
+        S_LT = 19,                               // "<"
+        S_GT = 20,                               // ">"
+        S_EQ = 21,                               // "="
+        S_EE = 22,                               // "=="
+        S_LTE = 23,                              // "<="
+        S_GTE = 24,                              // ">="
+        S_NE = 25,                               // "!="
+        S_LPAREN = 26,                           // "("
+        S_RPAREN = 27,                           // ")"
+        S_LBLOCK = 28,                           // "{"
+        S_RBLOCK = 29,                           // "}"
+        S_SEMICOLON = 30,                        // ";"
+        S_COMMA = 31,                            // ","
+        S_ETEST = 32,                            // ">>"
+        S_YYACCEPT = 33,                         // $accept
+        S_main = 34,                             // main
+        S_stmts = 35,                            // stmts
+        S_stmt = 36,                             // stmt
+        S_block_1 = 37,                          // block_1
+        S_block_2 = 38,                          // block_2
+        S_for_begin = 39,                        // for_begin
+        S_for_cond = 40,                         // for_cond
+        S_for_step = 41,                         // for_step
+        S_else_1 = 42,                           // else_1
+        S_expr_1 = 43,                           // expr_1
+        S_func_begin = 44,                       // func_begin
+        S_expr = 45,                             // expr
+        S_primary = 46,                          // primary
+        S_idents = 47,                           // idents
+        S_exprs = 48                             // exprs
       };
     };
 
@@ -621,6 +624,8 @@ namespace xxs {
 
       case symbol_kind::S_stmt: // stmt
       case symbol_kind::S_for_begin: // for_begin
+      case symbol_kind::S_for_cond: // for_cond
+      case symbol_kind::S_for_step: // for_step
       case symbol_kind::S_expr_1: // expr_1
       case symbol_kind::S_expr: // expr
       case symbol_kind::S_primary: // primary
@@ -800,6 +805,8 @@ switch (yykind)
 
       case symbol_kind::S_stmt: // stmt
       case symbol_kind::S_for_begin: // for_begin
+      case symbol_kind::S_for_cond: // for_cond
+      case symbol_kind::S_for_step: // for_step
       case symbol_kind::S_expr_1: // expr_1
       case symbol_kind::S_expr: // expr
       case symbol_kind::S_primary: // primary
@@ -1111,6 +1118,21 @@ switch (yykind)
       make_NIL (const location_type& l)
       {
         return symbol_type (token::NIL, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_WHILE (location_type l)
+      {
+        return symbol_type (token::WHILE, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_WHILE (const location_type& l)
+      {
+        return symbol_type (token::WHILE, l);
       }
 #endif
 #if 201103L <= YY_CPLUSPLUS
@@ -1762,9 +1784,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 218,     ///< Last index in yytable_.
-      yynnts_ = 14,  ///< Number of nonterminal symbols.
-      yyfinal_ = 31 ///< Termination state number.
+      yylast_ = 246,     ///< Last index in yytable_.
+      yynnts_ = 16,  ///< Number of nonterminal symbols.
+      yyfinal_ = 33 ///< Termination state number.
     };
 
 
@@ -1811,10 +1833,10 @@ switch (yykind)
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
-      25,    26,    27,    28,    29,    30,    31
+      25,    26,    27,    28,    29,    30,    31,    32
     };
     // Last valid token kind.
-    const int code_max = 286;
+    const int code_max = 287;
 
     if (t <= 0)
       return symbol_kind::S_YYEOF;
@@ -1863,6 +1885,8 @@ switch (yykind)
 
       case symbol_kind::S_stmt: // stmt
       case symbol_kind::S_for_begin: // for_begin
+      case symbol_kind::S_for_cond: // for_cond
+      case symbol_kind::S_for_step: // for_step
       case symbol_kind::S_expr_1: // expr_1
       case symbol_kind::S_expr: // expr
       case symbol_kind::S_primary: // primary
@@ -1928,6 +1952,8 @@ switch (yykind)
 
       case symbol_kind::S_stmt: // stmt
       case symbol_kind::S_for_begin: // for_begin
+      case symbol_kind::S_for_cond: // for_cond
+      case symbol_kind::S_for_step: // for_step
       case symbol_kind::S_expr_1: // expr_1
       case symbol_kind::S_expr: // expr
       case symbol_kind::S_primary: // primary
@@ -1996,7 +2022,6 @@ switch (yykind)
   }
 
 } // xxs
-#line 2000 "parser.h"
 
 
 

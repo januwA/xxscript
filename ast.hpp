@@ -153,18 +153,21 @@ namespace xxs
 
   struct ForAst : public Ast
   {
-    ast_ptr init;
-    ast_ptr cond;
-    ast_ptr step;
+    ast_ptr init{nullptr};
+    ast_ptr cond{nullptr};
+    ast_ptr step{nullptr};
     stmts_ptr body;
 
     ForAst(ast_ptr init, ast_ptr cond, ast_ptr step, stmts_ptr body)
         : cond(cond), init(init), step(step), body(body) {}
     ~ForAst()
     {
-      delete init;
-      delete cond;
-      delete step;
+      if (init)
+        delete init;
+      if (cond)
+        delete cond;
+      if (step)
+        delete step;
       delete body;
     }
     AT id() { return AT::For; }

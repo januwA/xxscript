@@ -55,6 +55,7 @@ IDENT   (?i:[a-z][a-z0-9]*)
 "if" { _T(IF); }
 "else" { _T(ELSE); }
 "for" { _T(FOR); }
+"while" { _T(WHILE); }
 
 {INT}   { _IT(INT); }
 {FLOAT} { _FT(FLOAT); }
