@@ -32,10 +32,14 @@ namespace xxs
 
   struct StmtsAst : public Ast
   {
+    // stmts表达式，默认返回最后一个ast_ptr的value
+    // 设置为false将返回第一个ast_ptr的value
+    // 为空返回0
+    bool lastVal{true};
     std::vector<ast_ptr> stmts;
 
     StmtsAst() : stmts(0) {}
-    StmtsAst(std::vector<ast_ptr> blocks) : stmts(blocks) {}
+    StmtsAst(std::vector<ast_ptr> blocks, bool lastVal = true) : stmts(blocks), lastVal(lastVal) {}
     ~StmtsAst()
     {
       for (auto a : stmts)
@@ -149,9 +153,9 @@ namespace xxs
 
   struct ForAst : public Ast
   {
-    ast_ptr   init;
-    ast_ptr   cond;
-    ast_ptr   step;
+    ast_ptr init;
+    ast_ptr cond;
+    ast_ptr step;
     stmts_ptr body;
 
     ForAst(ast_ptr init, ast_ptr cond, ast_ptr step, stmts_ptr body)

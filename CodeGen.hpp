@@ -97,6 +97,8 @@ namespace xxs
         return cg_for(reinterpret_cast<ForAst *>(ast));
       case AT::VarAssign:
         return cg_varAssign(reinterpret_cast<VarAssignAst *>(ast));
+      case AT::Stmts:
+        return cg_stmts(reinterpret_cast<StmtsAst *>(ast));
       }
     }
 
@@ -235,11 +237,30 @@ namespace xxs
 
     Value *cg_stmts(StmtsAst *ast, BasicBlock *BB)
     {
-      Value *v;
+      if(ast->stmts.empty()) return b->getInt32(0);
       b->SetInsertPoint(BB);
+
+      Value *v = nullptr;
       for (auto s : ast->stmts)
-        v = codegen(s);
+      {
+        if (ast->lastVal)
+        {
+          v = codegen(s);
+        }
+        else
+        {
+          if (!v)
+            v = codegen(s);
+          else
+            codegen(s);
+        }
+      }
       return v;
+    }
+
+    Value *cg_stmts(StmtsAst *ast)
+    {
+      return cg_stmts(ast, b->GetInsertBlock());
     }
 
     Value *cg_if(IfAst *ast)

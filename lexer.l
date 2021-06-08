@@ -29,6 +29,8 @@ IDENT   (?i:[a-z][a-z0-9]*)
 "-" { _T(MINUS); }
 "*" { _T(MUL); }
 "/" { _T(DIV); }
+"++" { _T(PPLUS); }
+"--" { _T(MMINUS); }
 
 "<" { _T(LT); }
 ">" { _T(GT); }

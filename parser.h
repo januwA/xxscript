@@ -47,14 +47,18 @@
 // "%code requires" blocks.
 #line 17 "parser.y"
 
-	#include <memory>
-	#include <format>
-	#include "ast.hpp"
-	#include "error.hpp"
+  #include <memory>
+  #include <format>
+  #include "ast.hpp"
+  #include "error.hpp"
 
-	typedef  std::vector<xxs::ast_ptr> asts_t;
+  typedef  std::vector<xxs::ast_ptr> asts_t;
+  
+  #define M(o) std::move(o)
+  #define BINARY(op) yylhs.value.as < xxs::ast_ptr > () = new BinaryAst(token::op,  yystack_[0].value.as < xxs::ast_ptr > (),  yystack_[2].value.as < xxs::ast_ptr > ())
+  #define IPPMM(i, op) new VarAssignAst( yystack_[i].value.as<std::string>(), token::EQ, new BinaryAst(token::PLUS, new VarAccessAst(yystack_[i].value.as<std::string>()), new IntAst(1)) )
 
-#line 58 "parser.h"
+#line 62 "parser.h"
 
 
 # include <cstdlib> // std::abort
@@ -191,7 +195,7 @@
 #endif  /* ! defined XXSDEBUG */
 
 namespace xxs {
-#line 195 "parser.h"
+#line 199 "parser.h"
 
 
 
@@ -471,20 +475,22 @@ namespace xxs {
     MINUS = 268,                   // "-"
     MUL = 269,                     // "*"
     DIV = 270,                     // "/"
-    LT = 271,                      // "<"
-    GT = 272,                      // ">"
-    EQ = 273,                      // "="
-    EE = 274,                      // "=="
-    LTE = 275,                     // "<="
-    GTE = 276,                     // ">="
-    NE = 277,                      // "!="
-    LPAREN = 278,                  // "("
-    RPAREN = 279,                  // ")"
-    LBLOCK = 280,                  // "{"
-    RBLOCK = 281,                  // "}"
-    SEMICOLON = 282,               // ";"
-    COMMA = 283,                   // ","
-    ETEST = 284                    // ">>"
+    PPLUS = 271,                   // "++"
+    MMINUS = 272,                  // "--"
+    LT = 273,                      // "<"
+    GT = 274,                      // ">"
+    EQ = 275,                      // "="
+    EE = 276,                      // "=="
+    LTE = 277,                     // "<="
+    GTE = 278,                     // ">="
+    NE = 279,                      // "!="
+    LPAREN = 280,                  // "("
+    RPAREN = 281,                  // ")"
+    LBLOCK = 282,                  // "{"
+    RBLOCK = 283,                  // "}"
+    SEMICOLON = 284,               // ";"
+    COMMA = 285,                   // ","
+    ETEST = 286                    // ">>"
       };
       /// Backward compatibility alias (Bison 3.6).
       typedef token_kind_type yytokentype;
@@ -501,7 +507,7 @@ namespace xxs {
     {
       enum symbol_kind_type
       {
-        YYNTOKENS = 30, ///< Number of tokens.
+        YYNTOKENS = 32, ///< Number of tokens.
         S_YYEMPTY = -2,
         S_YYEOF = 0,                             // "end of file"
         S_YYerror = 1,                           // error
@@ -519,34 +525,36 @@ namespace xxs {
         S_MINUS = 13,                            // "-"
         S_MUL = 14,                              // "*"
         S_DIV = 15,                              // "/"
-        S_LT = 16,                               // "<"
-        S_GT = 17,                               // ">"
-        S_EQ = 18,                               // "="
-        S_EE = 19,                               // "=="
-        S_LTE = 20,                              // "<="
-        S_GTE = 21,                              // ">="
-        S_NE = 22,                               // "!="
-        S_LPAREN = 23,                           // "("
-        S_RPAREN = 24,                           // ")"
-        S_LBLOCK = 25,                           // "{"
-        S_RBLOCK = 26,                           // "}"
-        S_SEMICOLON = 27,                        // ";"
-        S_COMMA = 28,                            // ","
-        S_ETEST = 29,                            // ">>"
-        S_YYACCEPT = 30,                         // $accept
-        S_main = 31,                             // main
-        S_stmts = 32,                            // stmts
-        S_stmt = 33,                             // stmt
-        S_block_1 = 34,                          // block_1
-        S_block_2 = 35,                          // block_2
-        S_for_begin = 36,                        // for_begin
-        S_else_1 = 37,                           // else_1
-        S_expr_1 = 38,                           // expr_1
-        S_func_begin = 39,                       // func_begin
-        S_expr = 40,                             // expr
-        S_primary = 41,                          // primary
-        S_idents = 42,                           // idents
-        S_exprs = 43                             // exprs
+        S_PPLUS = 16,                            // "++"
+        S_MMINUS = 17,                           // "--"
+        S_LT = 18,                               // "<"
+        S_GT = 19,                               // ">"
+        S_EQ = 20,                               // "="
+        S_EE = 21,                               // "=="
+        S_LTE = 22,                              // "<="
+        S_GTE = 23,                              // ">="
+        S_NE = 24,                               // "!="
+        S_LPAREN = 25,                           // "("
+        S_RPAREN = 26,                           // ")"
+        S_LBLOCK = 27,                           // "{"
+        S_RBLOCK = 28,                           // "}"
+        S_SEMICOLON = 29,                        // ";"
+        S_COMMA = 30,                            // ","
+        S_ETEST = 31,                            // ">>"
+        S_YYACCEPT = 32,                         // $accept
+        S_main = 33,                             // main
+        S_stmts = 34,                            // stmts
+        S_stmt = 35,                             // stmt
+        S_block_1 = 36,                          // block_1
+        S_block_2 = 37,                          // block_2
+        S_for_begin = 38,                        // for_begin
+        S_else_1 = 39,                           // else_1
+        S_expr_1 = 40,                           // expr_1
+        S_func_begin = 41,                       // func_begin
+        S_expr = 42,                             // expr
+        S_primary = 43,                          // primary
+        S_idents = 44,                           // idents
+        S_exprs = 45                             // exprs
       };
     };
 
@@ -1213,6 +1221,36 @@ switch (yykind)
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
+      make_PPLUS (location_type l)
+      {
+        return symbol_type (token::PPLUS, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_PPLUS (const location_type& l)
+      {
+        return symbol_type (token::PPLUS, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_MMINUS (location_type l)
+      {
+        return symbol_type (token::MMINUS, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_MMINUS (const location_type& l)
+      {
+        return symbol_type (token::MMINUS, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
       make_LT (location_type l)
       {
         return symbol_type (token::LT, std::move (l));
@@ -1464,7 +1502,7 @@ switch (yykind)
     // Tables.
     // YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
     // STATE-NUM.
-    static const signed char yypact_[];
+    static const short yypact_[];
 
     // YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
     // Performed when YYTABLE does not specify something else to do.  Zero
@@ -1472,7 +1510,7 @@ switch (yykind)
     static const signed char yydefact_[];
 
     // YYPGOTO[NTERM-NUM].
-    static const signed char yypgoto_[];
+    static const short yypgoto_[];
 
     // YYDEFGOTO[NTERM-NUM].
     static const signed char yydefgoto_[];
@@ -1497,7 +1535,7 @@ switch (yykind)
 
 #if XXSDEBUG
     // YYRLINE[YYN] -- Source line where rule number YYN was defined.
-    static const signed char yyrline_[];
+    static const unsigned char yyrline_[];
     /// Report on the debug stream that the rule \a r is going to be reduced.
     virtual void yy_reduce_print_ (int r) const;
     /// Print the state stack on the debug stream.
@@ -1724,9 +1762,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 154,     ///< Last index in yytable_.
+      yylast_ = 218,     ///< Last index in yytable_.
       yynnts_ = 14,  ///< Number of nonterminal symbols.
-      yyfinal_ = 25 ///< Termination state number.
+      yyfinal_ = 31 ///< Termination state number.
     };
 
 
@@ -1773,10 +1811,10 @@ switch (yykind)
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
-      25,    26,    27,    28,    29
+      25,    26,    27,    28,    29,    30,    31
     };
     // Last valid token kind.
-    const int code_max = 284;
+    const int code_max = 286;
 
     if (t <= 0)
       return symbol_kind::S_YYEOF;
@@ -1958,7 +1996,7 @@ switch (yykind)
   }
 
 } // xxs
-#line 1962 "parser.h"
+#line 2000 "parser.h"
 
 
 
