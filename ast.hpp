@@ -22,6 +22,8 @@ namespace xxs
     If,
     For,
     While,
+    Break,
+    Continue,
   };
   struct Ast
   {
@@ -79,7 +81,7 @@ namespace xxs
     AT id() { return AT::Float; }
     std::string toString()
     {
-       return std::to_string(num);
+      return std::to_string(num);
     };
   };
 
@@ -173,6 +175,26 @@ namespace xxs
     std::string toString()
     {
       return std::format("return {}", val ? "" : val->toString());
+    };
+  };
+
+  struct BreakAst : public Ast
+  {
+    BreakAst() {}
+    AT id() { return AT::Break; }
+    std::string toString()
+    {
+      return std::format("break");
+    };
+  };
+
+  struct ContinueAst : public Ast
+  {
+    ContinueAst() {}
+    AT id() { return AT::Continue; }
+    std::string toString()
+    {
+      return std::format("break");
     };
   };
 

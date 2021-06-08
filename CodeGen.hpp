@@ -50,11 +50,17 @@ namespace xxs
 
   struct CodeGen
   {
+  private:
     std::unique_ptr<LLVMContext> llctx;
     std::unique_ptr<IRBuilder<>> b;
     std::unique_ptr<Module> m;
     std::unique_ptr<legacy::FunctionPassManager> fmp;
     xxs::Context ctx;
+
+    BasicBlock *breakBB{nullptr};
+    BasicBlock *continueBB{nullptr};
+
+  public:
     CodeGen()
     {
       llctx = std::make_unique<LLVMContext>();
@@ -165,6 +171,10 @@ namespace xxs
         return cg_varAssign(reinterpret_cast<VarAssignAst *>(ast));
       case AT::Stmts:
         return cg_stmts(reinterpret_cast<StmtsAst *>(ast));
+      case AT::Break:
+        return cg_break(reinterpret_cast<BreakAst *>(ast));
+      case AT::Continue:
+        return cg_continue(reinterpret_cast<ContinueAst *>(ast));
       }
     }
 
@@ -186,22 +196,21 @@ namespace xxs
 
     Value *cg_varAccess(VarAccessAst *ast)
     {
-      // 变量或函数
       auto val = ctx.get(ast->name);
       if (val)
       {
-        printf("var:%s\n", ast->name);
+        // printf("var:%s\n", ast->name);
         return b->CreateLoad(val, ast->name);
       }
 
       auto fun = ctx.getf(ast->name);
       if (fun)
       {
-        printf("fun:%s\n", ast->name);
+        // printf("fun:%s\n", ast->name);
         return fun;
       }
 
-      printf("def:%s\n", ast->name);
+      // printf("def:%s\n", ast->name);
       return b->getInt32(0);
     }
 
@@ -290,7 +299,7 @@ namespace xxs
         // 向变量符号表添加变量地址
         ctx.set(Arg.getName().str(), Alloca);
       }
-      cg_stmts(ast->body, BB);
+      cg_stmts(ast->body);
 
       verifyFunction(*fun);
 
@@ -303,11 +312,10 @@ namespace xxs
       return fun;
     }
 
-    Value *cg_stmts(StmtsAst *ast, BasicBlock *BB)
+    Value *cg_stmts(StmtsAst *ast)
     {
       if (ast->stmts.empty())
         return b->getInt32(0);
-      b->SetInsertPoint(BB);
 
       Value *v = nullptr;
       for (auto s : ast->stmts)
@@ -327,11 +335,6 @@ namespace xxs
       return v;
     }
 
-    Value *cg_stmts(StmtsAst *ast)
-    {
-      return cg_stmts(ast, b->GetInsertBlock());
-    }
-
     Value *cg_if(IfAst *ast)
     {
       // 获取正在构建的function
@@ -343,7 +346,8 @@ namespace xxs
 
       b->CreateCondBr(codegen(ast->cond), ThenBB, ElseBB);
 
-      cg_stmts(ast->th, ThenBB);
+      b->SetInsertPoint(ThenBB);
+      cg_stmts(ast->th);
 
       // 执行完cg_stmts后block point可能发生改变
       // 需要无条件跳回来
@@ -351,7 +355,8 @@ namespace xxs
 
       // ThenBB = Builder.GetInsertBlock();
       // f->getBasicBlockList().push_back(ElseBB);
-      cg_stmts(ast->el, ElseBB);
+      b->SetInsertPoint(ElseBB);
+      cg_stmts(ast->el);
       b->CreateBr(MergeBB);
 
       b->SetInsertPoint(MergeBB);
@@ -372,6 +377,9 @@ namespace xxs
       auto LoopBodyBB = BasicBlock::Create(*llctx, "loopBody", f);
       auto LoopStepBB = BasicBlock::Create(*llctx, "loopStep", f);
       auto LoopEndBB = BasicBlock::Create(*llctx, "loopEnd", f);
+
+      breakBB = LoopEndBB;
+      continueBB = LoopStepBB;
 
       b->CreateBr(LoopBB);
       b->SetInsertPoint(LoopBB);
@@ -412,6 +420,21 @@ namespace xxs
         return val;
       }
       }
+    }
+
+    Value *cg_break(BreakAst *ast)
+    {
+      if (!breakBB)
+        throw std::exception("Illegal break statement");
+
+      b->CreateBr(breakBB);
+    }
+
+    Value *cg_continue(ContinueAst *ast)
+    {
+      if (!continueBB)
+        throw std::exception("Illegal continue statement");
+      b->CreateBr(continueBB);
     }
 
     AllocaInst *CreateEntryBlockAlloca(Function *fun, Type *type,
