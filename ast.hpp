@@ -26,6 +26,7 @@ namespace xxs
   struct Ast
   {
     virtual AT id() = 0;
+    virtual std::string toString() = 0;
   };
 
   typedef xxs::Ast *ast_ptr;
@@ -47,6 +48,11 @@ namespace xxs
     }
 
     AT id() { return AT::Stmts; }
+    std::string toString()
+    {
+      return "{  }";
+    }
+
     void push(ast_ptr ast)
     {
       stmts.push_back(ast);
@@ -59,6 +65,11 @@ namespace xxs
     int num{0};
     IntAst(int num) : num(num) {}
     AT id() { return AT::Int; }
+
+    std::string toString()
+    {
+      return std::to_string(num);
+    };
   };
 
   struct FloatAst : public Ast
@@ -66,6 +77,10 @@ namespace xxs
     float num{0};
     FloatAst(float num) : num(num) {}
     AT id() { return AT::Float; }
+    std::string toString()
+    {
+       return std::to_string(num);
+    };
   };
 
   struct VarAccessAst : public Ast
@@ -73,6 +88,10 @@ namespace xxs
     std::string name;
     VarAccessAst(std::string_view name) : name(name) {}
     AT id() { return AT::VarAccess; }
+    std::string toString()
+    {
+      return name;
+    };
   };
 
   struct VarAssignAst : public Ast
@@ -83,6 +102,10 @@ namespace xxs
     VarAssignAst(std::string name, int op, ast_ptr right) : op(op), name(name), right(right) {}
     ~VarAssignAst() { delete right; }
     AT id() override { return AT::VarAssign; }
+    std::string toString()
+    {
+      return std::format("{} = {}", name, right->toString());
+    };
   };
 
   struct BinaryAst : public Ast
@@ -97,6 +120,10 @@ namespace xxs
       delete right;
     }
     AT id() override { return AT::Binary; }
+    std::string toString()
+    {
+      return std::format("{} op {}", left->toString(), right->toString());
+    };
   };
 
   struct CallAst : public Ast
@@ -112,6 +139,10 @@ namespace xxs
         delete a;
     }
     AT id() { return AT::Call; }
+    std::string toString()
+    {
+      return std::format("{}(...)", name->toString());
+    };
   };
 
   struct FuncAst : public Ast
@@ -124,15 +155,25 @@ namespace xxs
     ~FuncAst() { delete body; }
 
     AT id() { return AT::Function; }
+    std::string toString()
+    {
+      return std::format("function {}(...){ }", name);
+    };
   };
 
   struct RetAst : public Ast
   {
     ast_ptr val;
+
     RetAst(ast_ptr val) : val(val) {}
     RetAst() : val(nullptr) {}
     ~RetAst() { delete val; }
+
     AT id() { return AT::Ret; }
+    std::string toString()
+    {
+      return std::format("return {}", val ? "" : val->toString());
+    };
   };
 
   struct IfAst : public Ast
@@ -149,6 +190,10 @@ namespace xxs
       delete el;
     }
     AT id() { return AT::If; }
+    std::string toString()
+    {
+      return std::format("if ({}) {}", cond->toString());
+    };
   };
 
   struct ForAst : public Ast
@@ -171,6 +216,10 @@ namespace xxs
       delete body;
     }
     AT id() { return AT::For; }
+    std::string toString()
+    {
+      return std::format("for (;;) { }");
+    };
   };
 
 }

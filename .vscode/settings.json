@@ -3,10 +3,12 @@
     "*.xml": "html",
     "*.CEA": "asm",
     "*.cea": "cea",
+    "*.xxs": "javascript",
     "xstring": "cpp",
     "compare": "cpp",
     "xutility": "cpp",
     "deque": "cpp",
-    "xlocale": "cpp"
+    "xlocale": "cpp",
+    "format": "cpp"
   }
 }

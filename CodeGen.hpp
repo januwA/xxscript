@@ -30,33 +30,41 @@
 #include "llvm/Transforms/InstCombine/InstCombine.h"
 #include "llvm/Transforms/Scalar.h"
 #include "llvm/Transforms/Scalar/GVN.h"
+#include "llvm/Support/raw_ostream.h"
+#include "llvm/Support/TargetRegistry.h"
+#include "llvm/Target/TargetOptions.h"
+#include "llvm/ADT/Optional.h"
+#include "llvm/IR/Instructions.h"
+#include "llvm/Support/FileSystem.h"
+#include "llvm/Support/Host.h"
 
 #include "ast.hpp"
 #include "parser.h"
+#include "context.hpp"
 
 using namespace llvm;
+using namespace llvm::sys;
 
 namespace xxs
 {
 
   struct CodeGen
   {
-    std::unique_ptr<LLVMContext> ctx;
+    std::unique_ptr<LLVMContext> llctx;
     std::unique_ptr<IRBuilder<>> b;
     std::unique_ptr<Module> m;
     std::unique_ptr<legacy::FunctionPassManager> fmp;
-    std::map<std::string, llvm::AllocaInst *> Variables;
-    std::map<std::string, llvm::Function *> Functions;
+    xxs::Context ctx;
     CodeGen()
     {
-      ctx = std::make_unique<LLVMContext>();
+      llctx = std::make_unique<LLVMContext>();
       InitializeModuleAndPassManager();
-      b = std::make_unique<IRBuilder<>>(*ctx);
+      b = std::make_unique<IRBuilder<>>(*llctx);
     }
 
     void InitializeModuleAndPassManager()
     {
-      m = std::make_unique<Module>("jit", *ctx);
+      m = std::make_unique<Module>("jit", *llctx);
 
       // 创建一个优化器，附加到模块
       fmp = std::make_unique<legacy::FunctionPassManager>(m.get());
@@ -71,6 +79,64 @@ namespace xxs
       fmp->add(createCFGSimplificationPass());
 
       fmp->doInitialization();
+    }
+
+    // https://releases.llvm.org/12.0.0/docs/tutorial/MyFirstLanguageFrontend/LangImpl08.html
+    int aob()
+    {
+      InitializeAllTargetInfos();
+      InitializeAllTargets();
+      InitializeAllTargetMCs();
+      InitializeAllAsmParsers();
+      InitializeAllAsmPrinters();
+
+      // 返回当前机器的目标三元组
+      auto TargetTriple = sys::getDefaultTargetTriple();
+
+      // 使用目标三元组来获得Target
+      std::string Error;
+      auto Target = TargetRegistry::lookupTarget(TargetTriple, Error);
+
+      if (!Target)
+      {
+        errs() << Error;
+        return 1;
+      }
+
+      // 目标机器
+      auto CPU = "generic";
+      auto Features = "";
+
+      TargetOptions opt;
+      auto RM = Optional<Reloc::Model>();
+      auto TargetMachine = Target->createTargetMachine(TargetTriple, CPU, Features, opt, RM);
+
+      // 配置模块，以指定目标和数据布局
+      m->setDataLayout(TargetMachine->createDataLayout());
+      m->setTargetTriple(TargetTriple);
+
+      // 发出目标代码
+      auto Filename = "output.o";
+      std::error_code EC;
+      raw_fd_ostream dest(Filename, EC, sys::fs::OF_None);
+
+      if (EC)
+      {
+        errs() << "Could not open file: " << EC.message();
+        return 1;
+      }
+
+      legacy::PassManager pass;
+      auto FileType = CGFT_ObjectFile;
+
+      if (TargetMachine->addPassesToEmitFile(pass, dest, nullptr, FileType))
+      {
+        errs() << "TargetMachine can't emit a file of this type";
+        return 1;
+      }
+
+      pass.run(*m);
+      dest.flush();
     }
 
     Value *codegen(ast_ptr ast)
@@ -115,33 +181,28 @@ namespace xxs
 
     Value *cg_float(FloatAst *ast)
     {
-      return ConstantFP::get(*ctx, APFloat(ast->num));
+      return ConstantFP::get(*llctx, APFloat(ast->num));
     }
 
     Value *cg_varAccess(VarAccessAst *ast)
     {
       // 变量或函数
-
-      auto val = Variables[ast->name];
-      auto fun = Functions[ast->name];
-
-      if (!val && !fun)
-      {
-        printf("def:%s\n", ast->name);
-        return b->getInt32(0);
-      }
-
+      auto val = ctx.get(ast->name);
       if (val)
       {
         printf("var:%s\n", ast->name);
         return b->CreateLoad(val, ast->name);
       }
 
+      auto fun = ctx.getf(ast->name);
       if (fun)
       {
         printf("fun:%s\n", ast->name);
         return fun;
       }
+
+      printf("def:%s\n", ast->name);
+      return b->getInt32(0);
     }
 
     Value *cg_binary(BinaryAst *ast)
@@ -177,51 +238,57 @@ namespace xxs
 
     Value *cg_call(CallAst *ast)
     {
-      auto fun = reinterpret_cast<Function *>(codegen(ast->name));
-      if (fun->arg_size() != ast->args.size())
+      auto fun = codegen(ast->name);
+
+      if (fun->getType()->getTypeID() != Type::TypeID::PointerTyID)
       {
-        throw std::exception(std::format("'{}' 参数数量错误.", fun->getName().str()).data());
+        auto id = ast->name->id();
+        if (id == xxs::AT::VarAccess || id == xxs::AT::Function)
+          throw std::exception(std::format("{} is not defined", ast->name->toString()).data());
+        else
+          throw std::exception(std::format("{} is not a function", ast->name->toString()).data());
       }
 
       std::vector<Value *> argv;
       for (auto a : ast->args)
-      {
         argv.push_back(codegen(a));
-      }
-      return b->CreateCall(fun, argv);
+
+      return b->CreateCall(reinterpret_cast<Function *>(fun), argv);
     }
 
     Value *cg_function(FuncAst *ast)
     {
+      // main先加上scope
+      if (ctx.scopes.empty())
+        ++ctx;
+
       auto parentBB = b->GetInsertBlock();
+      std::vector<Type *> fparams(ast->params.size(), Type::getInt32Ty(*llctx));
+      auto ftype = FunctionType::get(Type::getInt32Ty(*llctx), fparams, false);
+      auto fun = Function::Create(ftype, Function::ExternalLinkage, ast->name, m.get());
 
-      auto fname = ast->name;
-      auto params = ast->params;
-      std::vector<Type *> fparams(params.size(), Type::getInt32Ty(*ctx));
-      auto ftype = FunctionType::get(Type::getInt32Ty(*ctx), fparams, false);
-      auto fun = Function::Create(ftype, Function::ExternalLinkage, fname, m.get());
+      // 将函数添加到当前scope，在创建新的scope
+      ctx.setf(ast->name, fun);
+      ++ctx;
 
-      auto BB = BasicBlock::Create(*ctx, "entry", fun);
+      auto BB = BasicBlock::Create(*llctx, "entry", fun);
       b->SetInsertPoint(BB);
 
       // set arg name
       int i = 0;
       for (auto &arg : fun->args())
-        arg.setName(params[i++]);
-
-      Functions[fname] = fun;
+        arg.setName(ast->params[i++]);
 
       // 处理函数的参数列表
       for (auto &Arg : fun->args())
       {
         // 为这个变量创建一个 alloca
         auto Alloca = CreateEntryBlockAlloca(fun, Arg.getType(), Arg.getName().str());
-
         // 将初始值存储到 alloca 中
         b->CreateStore(&Arg, Alloca);
 
         // 向变量符号表添加变量地址
-        Variables[Arg.getName().str()] = Alloca;
+        ctx.set(Arg.getName().str(), Alloca);
       }
       cg_stmts(ast->body, BB);
 
@@ -232,6 +299,7 @@ namespace xxs
       // 为函数添加优化器
       // fmp->run(*fun);
 
+      --ctx;
       return fun;
     }
 
@@ -269,9 +337,9 @@ namespace xxs
       // 获取正在构建的function
       auto f = b->GetInsertBlock()->getParent();
 
-      auto MergeBB = BasicBlock::Create(*ctx, "merge", f);
-      auto ThenBB = BasicBlock::Create(*ctx, "then", f);
-      auto ElseBB = BasicBlock::Create(*ctx, "else", f);
+      auto MergeBB = BasicBlock::Create(*llctx, "merge", f);
+      auto ThenBB = BasicBlock::Create(*llctx, "then", f);
+      auto ElseBB = BasicBlock::Create(*llctx, "else", f);
 
       b->CreateCondBr(codegen(ast->cond), ThenBB, ElseBB);
 
@@ -300,10 +368,10 @@ namespace xxs
         codegen(ast->init);
 
       // 进入loop循环
-      auto LoopBB = BasicBlock::Create(*ctx, "loop", f);
-      auto LoopBodyBB = BasicBlock::Create(*ctx, "loopBody", f);
-      auto LoopStepBB = BasicBlock::Create(*ctx, "loopStep", f);
-      auto LoopEndBB = BasicBlock::Create(*ctx, "loopEnd", f);
+      auto LoopBB = BasicBlock::Create(*llctx, "loop", f);
+      auto LoopBodyBB = BasicBlock::Create(*llctx, "loopBody", f);
+      auto LoopStepBB = BasicBlock::Create(*llctx, "loopStep", f);
+      auto LoopEndBB = BasicBlock::Create(*llctx, "loopEnd", f);
 
       b->CreateBr(LoopBB);
       b->SetInsertPoint(LoopBB);
@@ -334,15 +402,15 @@ namespace xxs
       switch (ast->op)
       {
       case parser::token::EQ:
-        auto old = Variables[ast->name];
+      {
+        auto old = ctx.get(ast->name);
         auto val = codegen(ast->right);
         if (old)
-        {
           b->CreateStore(val, old);
-          return val;
-        }
-        return Variables[ast->name] = b->CreateAlloca(val->getType(), val, ast->name);
-        break;
+        else
+          ctx.set(ast->name, b->CreateAlloca(val->getType(), val, ast->name));
+        return val;
+      }
       }
     }
 

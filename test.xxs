@@ -1,14 +1,17 @@
 z = 1;
 
-function a() {
-  while (1) {}
+function f1() {
   return 1;
 }
 
-function b(x, y) {
-  return 2;
+function f2(x, y) {
+  function f3() {
+
+  }
+  return x + y;
 }
 
-x + y;
+// f3() // f3 is not defined
+// 2()  // 2 is not a function
 
-return a() + b(122, 2.3) + z;
+return f1() + f2(122, 2.3) + z;

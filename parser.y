@@ -60,7 +60,7 @@
 %start main
 %%
 
-main: stmts YYEOF 																		      { _main = new FuncAst("__main", params_t(), $1);  }
+main: stmts YYEOF 																		      { _main = new FuncAst("main", params_t(), $1);  }
 ;
 
 stmts: stmt 			 																		      { $$ = new StmtsAst({$1}); 							          }
