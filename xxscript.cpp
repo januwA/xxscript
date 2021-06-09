@@ -10,6 +10,20 @@ extern FILE *yyin, *yyout;
 
 int parserArgv(int argc, char *argv[]);
 
+#ifdef _WIN32
+#define DLLEXPORT __declspec(dllexport)
+#else
+#define DLLEXPORT
+#endif
+
+extern "C" DLLEXPORT int print(int x)
+{
+  std::cout << std::format("{}", x) << std::endl;
+  return 0;
+}
+
+int bJit, bPrint;
+
 int main(int argc, char *argv[])
 {
   if (parserArgv(argc, argv))
@@ -25,7 +39,10 @@ int main(int argc, char *argv[])
     {
       xxs::CodeGen cg;
       cg.codegen(my_main);
-      cg.print();
+      if (bPrint)
+        cg.print();
+      if (bJit)
+        cg.jit();
       delete my_main;
     }
   }
@@ -41,17 +58,9 @@ int parserArgv(int argc, char *argv[])
 {
   if (argc > 1)
   {
-
-    // xxscript.exe test.xxs
-    if (argc == 2)
-    {
-      fopen_s(&yyin, argv[1], "r");
-      return 0;
-    }
-
     // xxscript.exe -i test.xxs
     char prefix;
-    char *opt;
+    std::string_view opt;
     int valIndex;
     char *val;
     for (size_t i = 1; i < argc; i++)
@@ -59,8 +68,20 @@ int parserArgv(int argc, char *argv[])
       prefix = *argv[i];
       if (prefix == '-')
       {
-        opt = (argv[i] + 1);
-        switch (*opt)
+        opt = argv[i] + 1;
+        if (opt == "jit")
+        {
+          bJit = 1;
+          continue;
+        }
+
+        if (opt == "print")
+        {
+          bPrint = 1;
+          continue;
+        }
+
+        switch (opt.at(0))
         {
         case 'i':
           valIndex = ++i;

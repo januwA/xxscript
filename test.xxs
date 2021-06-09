@@ -1,6 +1,9 @@
-for (index = 0; index < 10; ++index) {
-  continue;  
-  x = 1;
+function add(x, y) {
+  return x * y;
 }
 
-a = 1 + 2;
+print(add(2, 3));
+
+// a = 1;
+// b = 2;
+// print(a + b);

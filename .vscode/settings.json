@@ -9,6 +9,8 @@
     "xutility": "cpp",
     "deque": "cpp",
     "xlocale": "cpp",
-    "format": "cpp"
+    "format": "cpp",
+    "*.inc": "cpp",
+    "cmath": "cpp"
   }
 }

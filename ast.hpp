@@ -153,7 +153,7 @@ namespace xxs
     params_t params;
     stmts_ptr body;
 
-    FuncAst(std::string_view name, params_t params, stmts_ptr body) : name(name.data()), params(params), body(body) {}
+    FuncAst(std::string_view name, params_t params, stmts_ptr body) : name(name.data()), params(params), body(body) { }
     ~FuncAst() { delete body; }
 
     AT id() { return AT::Function; }

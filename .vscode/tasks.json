@@ -29,7 +29,21 @@
       "label": "test xxs",
       "type": "shell",
       "windows": {
-        "command": "cmd.exe /C \"${workspaceFolder}/x64/Release/xxscript.exe ${workspaceFolder}/test.xxs\""
+        "command": "cmd.exe /C \"${workspaceFolder}/x64/Release/xxscript.exe -i ${workspaceFolder}/test.xxs -print\""
+      }
+    },
+    {
+      "label": "xxs to ll",
+      "type": "shell",
+      "windows": {
+        "command": "cmd.exe /C \"${workspaceFolder}/x64/Release/xxscript.exe -i ${workspaceFolder}/test.xxs -print > src.ll\""
+      }
+    },
+    {
+      "label": "jit xxs",
+      "type": "shell",
+      "windows": {
+        "command": "cmd.exe /C \"${workspaceFolder}/x64/Release/xxscript.exe -i ${workspaceFolder}/test.xxs -jit\""
       }
     },
   ]

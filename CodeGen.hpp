@@ -38,16 +38,21 @@
 #include "llvm/Support/FileSystem.h"
 #include "llvm/Support/Host.h"
 
+// JIT
+#include "KaleidoscopeJIT.h"
+
 #include "ast.hpp"
 #include "parser.h"
 #include "context.hpp"
 
 using namespace llvm;
 using namespace llvm::sys;
+using namespace llvm::orc;
+
+ExitOnError ExitOnErr;
 
 namespace xxs
 {
-
   struct CodeGen
   {
   private:
@@ -66,6 +71,32 @@ namespace xxs
       llctx = std::make_unique<LLVMContext>();
       InitializeModuleAndPassManager();
       b = std::make_unique<IRBuilder<>>(*llctx);
+    }
+
+    // 声明外部函数
+    void declares()
+    {
+#define i32Ty Type::getInt32Ty(*llctx)
+
+      auto print = Function::Create(FunctionType::get(i32Ty, {i32Ty}, false), Function::ExternalLinkage, "print", m.get());
+      ctx.setf("print", print);
+    }
+
+    int jit()
+    {
+      InitializeNativeTarget();
+      InitializeNativeTargetAsmPrinter();
+      InitializeNativeTargetAsmParser();
+
+      auto JIT = ExitOnErr(KaleidoscopeJIT::Create());
+      auto RT = JIT->getMainJITDylib().createResourceTracker();
+      auto TSM = ThreadSafeModule(std::move(m), std::move(llctx));
+      JIT->addModule(std::move(TSM), RT);
+      auto ExprSymbol = ExitOnErr(JIT->lookup("__top_main"));
+      int (*FP)() = (int (*)())(intptr_t)ExprSymbol.getAddress();
+      auto val = FP();
+      ExitOnErr(RT->remove());
+      return val;
     }
 
     void InitializeModuleAndPassManager()
@@ -180,7 +211,7 @@ namespace xxs
 
     void print()
     {
-      m->print(errs(), nullptr);
+      m->print(outs(), nullptr);
     }
 
   private:
@@ -247,9 +278,8 @@ namespace xxs
 
     Value *cg_call(CallAst *ast)
     {
-      auto fun = codegen(ast->name);
-
-      if (fun->getType()->getTypeID() != Type::TypeID::PointerTyID)
+      auto F = codegen(ast->name);
+      if (F->getType()->getTypeID() != Type::TypeID::PointerTyID)
       {
         auto id = ast->name->id();
         if (id == xxs::AT::VarAccess || id == xxs::AT::Function)
@@ -261,55 +291,57 @@ namespace xxs
       std::vector<Value *> argv;
       for (auto a : ast->args)
         argv.push_back(codegen(a));
-
-      return b->CreateCall(reinterpret_cast<Function *>(fun), argv);
+      return b->CreateCall(reinterpret_cast<Function *>(F), argv);
     }
 
     Value *cg_function(FuncAst *ast)
     {
       // main先加上scope
       if (ctx.scopes.empty())
+      {
         ++ctx;
+        declares();
+      }
 
       auto parentBB = b->GetInsertBlock();
-      std::vector<Type *> fparams(ast->params.size(), Type::getInt32Ty(*llctx));
-      auto ftype = FunctionType::get(Type::getInt32Ty(*llctx), fparams, false);
-      auto fun = Function::Create(ftype, Function::ExternalLinkage, ast->name, m.get());
+      std::vector<Type *> params(ast->params.size(), b->getInt32Ty());
+      auto ftype = FunctionType::get(b->getInt32Ty(), params, false);
+      auto F = Function::Create(ftype, Function::ExternalLinkage, ast->name, m.get());
 
       // 将函数添加到当前scope，在创建新的scope
-      ctx.setf(ast->name, fun);
+      ctx.setf(ast->name, F);
       ++ctx;
 
-      auto BB = BasicBlock::Create(*llctx, "entry", fun);
+      auto BB = BasicBlock::Create(*llctx, "entry", F);
       b->SetInsertPoint(BB);
 
       // set arg name
       int i = 0;
-      for (auto &arg : fun->args())
+      for (auto &arg : F->args())
         arg.setName(ast->params[i++]);
 
       // 处理函数的参数列表
-      for (auto &Arg : fun->args())
+      for (auto &Arg : F->args())
       {
-        // 为这个变量创建一个 alloca
-        auto Alloca = CreateEntryBlockAlloca(fun, Arg.getType(), Arg.getName().str());
-        // 将初始值存储到 alloca 中
+        auto argname = Arg.getName().str();
+        auto Alloca = CreateEntryBlockAlloca(F, Arg.getType(), argname);
         b->CreateStore(&Arg, Alloca);
-
-        // 向变量符号表添加变量地址
-        ctx.set(Arg.getName().str(), Alloca);
+        ctx.set(argname, Alloca);
       }
+
       cg_stmts(ast->body);
 
-      verifyFunction(*fun);
+      // 默认返回0
+      b->CreateRet(b->getInt32(0));
+      verifyFunction(*F);
 
       b->SetInsertPoint(parentBB ? parentBB : BB);
 
       // 为函数添加优化器
-      // fmp->run(*fun);
+      fmp->run(*F);
 
       --ctx;
-      return fun;
+      return F;
     }
 
     Value *cg_stmts(StmtsAst *ast)
@@ -411,12 +443,17 @@ namespace xxs
       {
       case parser::token::EQ:
       {
-        auto old = ctx.get(ast->name);
+        auto Alloca = ctx.get(ast->name);
         auto val = codegen(ast->right);
-        if (old)
-          b->CreateStore(val, old);
+        if (Alloca)
+          b->CreateStore(val, Alloca);
         else
-          ctx.set(ast->name, b->CreateAlloca(val->getType(), val, ast->name));
+        {
+          auto F = b->GetInsertBlock()->getParent();
+          auto Alloca = CreateEntryBlockAlloca(F, val->getType(), ast->name);
+          b->CreateStore(val, Alloca);
+          ctx.set(ast->name, Alloca);
+        }
         return val;
       }
       }
@@ -437,13 +474,12 @@ namespace xxs
       b->CreateBr(continueBB);
     }
 
-    AllocaInst *CreateEntryBlockAlloca(Function *fun, Type *type,
-                                       std::string_view VarName)
+    AllocaInst *CreateEntryBlockAlloca(Function *fun, Type *type, std::string_view VarName)
     {
       // 创建了一个指向入口块的第一条指令 (.begin()) 的 IRBuilder 对象
       IRBuilder<> TmpB(&fun->getEntryBlock(), fun->getEntryBlock().begin());
       // 然后它创建一个具有预期名称的 alloca 并返回它
-      return TmpB.CreateAlloca(type, 0, VarName.data());
+      return TmpB.CreateAlloca(type, nullptr, VarName.data());
     }
   };
 

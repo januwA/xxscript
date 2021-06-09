@@ -45,6 +45,7 @@
 #ifndef YY_XXS_PARSER_H_INCLUDED
 # define YY_XXS_PARSER_H_INCLUDED
 // "%code requires" blocks.
+#line 17 "parser.y"
 
   #include <memory>
   #include <format>
@@ -53,10 +54,10 @@
 
   typedef  std::vector<xxs::ast_ptr> asts_t;
 
-  #define M(o) std::move(o)
-  #define BINARY(op) yylhs.value.as < xxs::ast_ptr > () = new BinaryAst(token::op,  yystack_[0].value.as < xxs::ast_ptr > (),  yystack_[2].value.as < xxs::ast_ptr > ())
+  #define BINARY(op) yylhs.value.as < xxs::ast_ptr > () = new BinaryAst(token::op,  yystack_[2].value.as<xxs::ast_ptr>(),  yystack_[0].value.as<xxs::ast_ptr>())
   #define IPPMM(i, op) new VarAssignAst( yystack_[i].value.as<std::string>(), token::EQ, new BinaryAst(token::PLUS, new VarAccessAst(yystack_[i].value.as<std::string>()), new IntAst(1)) )
 
+#line 61 "parser.h"
 
 
 # include <cstdlib> // std::abort
@@ -193,6 +194,7 @@
 #endif  /* ! defined XXSDEBUG */
 
 namespace xxs {
+#line 198 "parser.h"
 
 
 
@@ -1818,9 +1820,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 260,     ///< Last index in yytable_.
+      yylast_ = 255,     ///< Last index in yytable_.
       yynnts_ = 16,  ///< Number of nonterminal symbols.
-      yyfinal_ = 37 ///< Termination state number.
+      yyfinal_ = 38 ///< Termination state number.
     };
 
 
@@ -2056,6 +2058,7 @@ switch (yykind)
   }
 
 } // xxs
+#line 2062 "parser.h"
 
 
 
