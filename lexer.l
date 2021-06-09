@@ -30,6 +30,7 @@ IDENT   (?i:[a-z][a-z0-9]*)
 "-"             { _T(MINUS);        }
 "*"             { _T(MUL);          }
 "/"             { _T(DIV);          }
+"%"             { _T(PERCENT);      }
 "++"            { _T(PPLUS);        }
 "--"            { _T(MMINUS);       }
 
@@ -40,7 +41,6 @@ IDENT   (?i:[a-z][a-z0-9]*)
 "<="            { _T(LTE);          }
 ">="            { _T(GTE);          }
 "!="            { _T(NE);           }
-">>"            { _T(ETEST);        }
 
 "("             { _T(LPAREN);       }
 ")"             { _T(RPAREN);       }
@@ -51,6 +51,8 @@ IDENT   (?i:[a-z][a-z0-9]*)
 
 
 "nil"           { _T(NIL);          }
+"true"          { _T(TTRUE);         }
+"false"         { _T(TFALSE);        }
 "function"      { _T(FUNCTION);     }
 "return"        { _T(RETURN);       }
 "if"            { _T(IF);           }

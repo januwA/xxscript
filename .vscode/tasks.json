@@ -26,24 +26,31 @@
       ]
     },
     {
-      "label": "test xxs",
+      "label": "test ir",
       "type": "shell",
       "windows": {
-        "command": "cmd.exe /C \"${workspaceFolder}/x64/Release/xxscript.exe -i ${workspaceFolder}/test.xxs -print\""
+        "command": "cmd.exe /C \"${workspaceFolder}/x64/Release/xxscript.exe -i ${workspaceFolder}/test.xxs -ir\""
       }
     },
     {
-      "label": "xxs to ll",
+      "label": "xxs ll",
       "type": "shell",
       "windows": {
-        "command": "cmd.exe /C \"${workspaceFolder}/x64/Release/xxscript.exe -i ${workspaceFolder}/test.xxs -print > src.ll\""
+        "command": "cmd.exe /C \"${workspaceFolder}/x64/Release/xxscript.exe -i ${workspaceFolder}/test.xxs -ir > src.ll\""
       }
     },
     {
-      "label": "jit xxs",
+      "label": "xxs jit",
       "type": "shell",
       "windows": {
         "command": "cmd.exe /C \"${workspaceFolder}/x64/Release/xxscript.exe -i ${workspaceFolder}/test.xxs -jit\""
+      }
+    },
+    {
+      "label": "xxs parser",
+      "type": "shell",
+      "windows": {
+        "command": "cmd.exe /C \"${workspaceFolder}/x64/Release/xxscript.exe -i ${workspaceFolder}/test.xxs -parser\""
       }
     },
   ]

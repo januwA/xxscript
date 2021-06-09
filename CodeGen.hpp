@@ -65,8 +65,10 @@ namespace xxs
     BasicBlock *breakBB{nullptr};
     BasicBlock *continueBB{nullptr};
 
+    bool bPass{false};
+
   public:
-    CodeGen()
+    CodeGen(bool bPass) : bPass(bPass)
     {
       llctx = std::make_unique<LLVMContext>();
       InitializeModuleAndPassManager();
@@ -106,16 +108,18 @@ namespace xxs
       // 创建一个优化器，附加到模块
       fmp = std::make_unique<legacy::FunctionPassManager>(m.get());
 
-      // Do simple "peephole" optimizations and bit-twiddling optzns.
-      fmp->add(createInstructionCombiningPass());
-      // Reassociate expressions.
-      fmp->add(createReassociatePass());
-      // Eliminate Common SubExpressions.
-      fmp->add(createGVNPass());
-      // Simplify the control flow graph (deleting unreachable blocks, etc).
-      fmp->add(createCFGSimplificationPass());
-
-      fmp->doInitialization();
+      if (bPass)
+      {
+        // Do simple "peephole" optimizations and bit-twiddling optzns.
+        fmp->add(createInstructionCombiningPass());
+        // Reassociate expressions.
+        fmp->add(createReassociatePass());
+        // Eliminate Common SubExpressions.
+        fmp->add(createGVNPass());
+        // Simplify the control flow graph (deleting unreachable blocks, etc).
+        fmp->add(createCFGSimplificationPass());
+        fmp->doInitialization();
+      }
     }
 
     // https://releases.llvm.org/12.0.0/docs/tutorial/MyFirstLanguageFrontend/LangImpl08.html
@@ -172,7 +176,8 @@ namespace xxs
         return 1;
       }
 
-      pass.run(*m);
+      if (bPass)
+        pass.run(*m);
       dest.flush();
     }
 
@@ -259,6 +264,8 @@ namespace xxs
         return b->CreateMul(l, r);
       case parser::token::DIV:
         return b->CreateExactSDiv(l, r);
+      case parser::token::PERCENT:
+        return b->CreateSRem(l, r);
       case parser::token::LT:
         return b->CreateICmpSLT(l, r);
       case parser::token::GT:
@@ -329,16 +336,21 @@ namespace xxs
         ctx.set(argname, Alloca);
       }
 
-      cg_stmts(ast->body);
+      bool notRet = true;
+      if (cg_stmts(ast->body)->getType()->getTypeID() == Type::TypeID::VoidTyID)
+      {
+        notRet = false;
+      }
 
       // 默认返回0
-      b->CreateRet(b->getInt32(0));
-      verifyFunction(*F);
+      if (notRet)
+        b->CreateRet(b->getInt32(0));
 
+      verifyFunction(*F);
       b->SetInsertPoint(parentBB ? parentBB : BB);
 
       // 为函数添加优化器
-      // fmp->run(*F);
+      fmp->run(*F);
 
       --ctx;
       return F;
@@ -352,45 +364,71 @@ namespace xxs
       Value *v = nullptr;
       for (auto s : ast->stmts)
       {
+        // return 直接返回
+        if (s->id() == xxs::AT::Ret)
+          return cg_ret(reinterpret_cast<xxs::RetAst *>(s));
+
+        // break和continue之后的stmt将被无视
+        if (s->id() == xxs::AT::Break)
+          return cg_break(reinterpret_cast<xxs::BreakAst *>(s));
+        if (s->id() == xxs::AT::Continue)
+          return cg_continue(reinterpret_cast<xxs::ContinueAst *>(s));
+
+        // other
         if (ast->lastVal)
-        {
           v = codegen(s);
-        }
         else
-        {
-          if (!v)
-            v = codegen(s);
-          else
-            codegen(s);
-        }
+          !v ? v = codegen(s) : codegen(s);
       }
       return v;
     }
 
     Value *cg_if(IfAst *ast)
     {
-      // 获取正在构建的function
+      if (ast->th->empty() && ast->el->empty())
+        return b->getInt1(0);
+
       auto F = b->GetInsertBlock()->getParent();
 
       auto MergeBB = BasicBlock::Create(*llctx, "merge", F);
-      auto ThenBB = BasicBlock::Create(*llctx, "then", F);
-      auto ElseBB = BasicBlock::Create(*llctx, "else", F);
+      BasicBlock *ThenBB = BasicBlock::Create(*llctx, "then");
+      BasicBlock *ElseBB = BasicBlock::Create(*llctx, "else");
 
       auto cond = codegen(ast->cond);
-      b->CreateCondBr(cond, ThenBB, ElseBB);
 
-      b->SetInsertPoint(ThenBB);
-      cg_stmts(ast->th);
+      if (ast->th->empty() && !ast->el->empty())
+        b->CreateCondBr(cond, MergeBB, ElseBB);
+      else if (!ast->th->empty() && ast->el->empty())
+        b->CreateCondBr(cond, ThenBB, MergeBB);
+      else
+        b->CreateCondBr(cond, ThenBB, ElseBB);
 
-      // 执行完cg_stmts后block point可能发生改变
-      // 需要无条件跳回来
-      b->CreateBr(MergeBB);
+      if (!ast->th->stmts.empty())
+      {
+        F->getBasicBlockList().push_back(ThenBB);
+        b->SetInsertPoint(ThenBB);
+        auto r = cg_stmts(ast->th);
+        // break stmd and continue stmt return nullptr
+        // return stmt return type is VoidTyID
+        // 解决多个br的BUG和ret
+        if (r && r->getType()->getTypeID() != Type::TypeID::VoidTyID)
+        {
+          b->CreateBr(MergeBB);
+        };
+      }
 
       // ThenBB = Builder.GetInsertBlock();
-      // f->getBasicBlockList().push_back(ElseBB);
-      b->SetInsertPoint(ElseBB);
-      cg_stmts(ast->el);
-      b->CreateBr(MergeBB);
+      if (!ast->el->empty())
+      {
+        F->getBasicBlockList().push_back(ElseBB);
+        b->SetInsertPoint(ElseBB);
+        auto r = cg_stmts(ast->el);
+        // 做和then一样的事
+        if (r && r->getType()->getTypeID() != Type::TypeID::VoidTyID)
+        {
+          b->CreateBr(MergeBB);
+        };
+      }
 
       b->SetInsertPoint(MergeBB);
       return b->getInt1(0);
@@ -398,7 +436,7 @@ namespace xxs
 
     Value *cg_for(ForAst *ast)
     {
-      auto f = b->GetInsertBlock()->getParent();
+      auto F = b->GetInsertBlock()->getParent();
       auto parentBB = b->GetInsertBlock();
 
       // 初始化init表达式
@@ -406,10 +444,10 @@ namespace xxs
         codegen(ast->init);
 
       // 进入loop循环
-      auto LoopBB = BasicBlock::Create(*llctx, "loop", f);
-      auto LoopBodyBB = BasicBlock::Create(*llctx, "loopBody", f);
-      auto LoopStepBB = BasicBlock::Create(*llctx, "loopStep", f);
-      auto LoopEndBB = BasicBlock::Create(*llctx, "loopEnd", f);
+      auto LoopBB = BasicBlock::Create(*llctx, "loop", F);
+      auto LoopBodyBB = BasicBlock::Create(*llctx, "loopBody", F);
+      auto LoopStepBB = BasicBlock::Create(*llctx, "loopStep", F);
+      auto LoopEndBB = BasicBlock::Create(*llctx, "loopEnd", F);
 
       breakBB = LoopEndBB;
       continueBB = LoopStepBB;
@@ -417,8 +455,10 @@ namespace xxs
       b->CreateBr(LoopBB);
       b->SetInsertPoint(LoopBB);
 
-      auto cond = ast->cond ? codegen(ast->cond) : b->getInt1(1);
-      b->CreateCondBr(cond, LoopBodyBB, LoopEndBB);
+      if (ast->cond)
+        b->CreateCondBr(codegen(ast->cond), LoopBodyBB, LoopEndBB);
+      else
+        b->CreateBr(LoopBodyBB);
 
       b->SetInsertPoint(LoopBodyBB);
       codegen(ast->body);
@@ -431,11 +471,6 @@ namespace xxs
 
       b->SetInsertPoint(LoopEndBB);
       return b->getInt1(0);
-    }
-
-    Value *cg_ret(RetAst *ast)
-    {
-      return b->CreateRet(ast->val ? codegen(ast->val) : b->getInt32(0));
     }
 
     Value *cg_varAssign(VarAssignAst *ast)
@@ -460,19 +495,29 @@ namespace xxs
       }
     }
 
-    Value *cg_break(BreakAst *ast)
+    nullptr_t cg_break(BreakAst *ast)
     {
       if (!breakBB)
         throw std::exception("Illegal break statement");
 
       b->CreateBr(breakBB);
+      breakBB = nullptr;
+      return nullptr;
     }
 
-    Value *cg_continue(ContinueAst *ast)
+    nullptr_t cg_continue(ContinueAst *ast)
     {
       if (!continueBB)
         throw std::exception("Illegal continue statement");
       b->CreateBr(continueBB);
+      continueBB = nullptr;
+      return nullptr;
+    }
+
+    Value *cg_ret(RetAst *ast)
+    {
+      auto r = b->CreateRet(ast->val ? codegen(ast->val) : b->getInt32(0));
+      return r;
     }
 
     AllocaInst *CreateEntryBlockAlloca(Function *fun, Type *type, std::string_view VarName)

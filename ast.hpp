@@ -49,6 +49,8 @@ namespace xxs
         delete a;
     }
 
+    bool empty() const { return stmts.empty(); }
+
     AT id() { return AT::Stmts; }
     std::string toString()
     {
@@ -153,7 +155,7 @@ namespace xxs
     params_t params;
     stmts_ptr body;
 
-    FuncAst(std::string_view name, params_t params, stmts_ptr body) : name(name.data()), params(params), body(body) { }
+    FuncAst(std::string_view name, params_t params, stmts_ptr body) : name(name.data()), params(params), body(body) {}
     ~FuncAst() { delete body; }
 
     AT id() { return AT::Function; }
@@ -204,7 +206,8 @@ namespace xxs
     stmts_ptr th;
     stmts_ptr el;
 
-    IfAst(ast_ptr cond, stmts_ptr th, stmts_ptr el) : cond(cond), th(th), el(el) {}
+    IfAst(ast_ptr cond, stmts_ptr th, stmts_ptr el) : cond(cond), th(th), el(el) { }
+    
     ~IfAst()
     {
       delete cond;

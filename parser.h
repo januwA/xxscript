@@ -470,31 +470,33 @@ namespace xxs {
     WHILE = 262,                   // "while"
     CONTINUE = 263,                // "continue"
     BREAK = 264,                   // "break"
-    NIL = 265,                     // "nil"
-    RETURN = 266,                  // "return"
-    INT = 267,                     // "int"
-    FLOAT = 268,                   // "float"
-    IDENT = 269,                   // "identifier"
-    PLUS = 270,                    // "+"
-    MINUS = 271,                   // "-"
-    MUL = 272,                     // "*"
-    DIV = 273,                     // "/"
-    PPLUS = 274,                   // "++"
-    MMINUS = 275,                  // "--"
-    LT = 276,                      // "<"
-    GT = 277,                      // ">"
-    EQ = 278,                      // "="
-    EE = 279,                      // "=="
-    LTE = 280,                     // "<="
-    GTE = 281,                     // ">="
-    NE = 282,                      // "!="
-    LPAREN = 283,                  // "("
-    RPAREN = 284,                  // ")"
-    LBLOCK = 285,                  // "{"
-    RBLOCK = 286,                  // "}"
-    SEMICOLON = 287,               // ";"
-    COMMA = 288,                   // ","
-    ETEST = 289                    // ">>"
+    RETURN = 265,                  // "return"
+    NIL = 266,                     // "nil"
+    TTRUE = 267,                   // "true"
+    TFALSE = 268,                  // "false"
+    INT = 269,                     // "int"
+    FLOAT = 270,                   // "float"
+    IDENT = 271,                   // "identifier"
+    PLUS = 272,                    // "+"
+    MINUS = 273,                   // "-"
+    MUL = 274,                     // "*"
+    DIV = 275,                     // "/"
+    PERCENT = 276,                 // "%"
+    PPLUS = 277,                   // "++"
+    MMINUS = 278,                  // "--"
+    LT = 279,                      // "<"
+    GT = 280,                      // ">"
+    EQ = 281,                      // "="
+    EE = 282,                      // "=="
+    LTE = 283,                     // "<="
+    GTE = 284,                     // ">="
+    NE = 285,                      // "!="
+    LPAREN = 286,                  // "("
+    RPAREN = 287,                  // ")"
+    LBLOCK = 288,                  // "{"
+    RBLOCK = 289,                  // "}"
+    SEMICOLON = 290,               // ";"
+    COMMA = 291                    // ","
       };
       /// Backward compatibility alias (Bison 3.6).
       typedef token_kind_type yytokentype;
@@ -511,7 +513,7 @@ namespace xxs {
     {
       enum symbol_kind_type
       {
-        YYNTOKENS = 35, ///< Number of tokens.
+        YYNTOKENS = 37, ///< Number of tokens.
         S_YYEMPTY = -2,
         S_YYEOF = 0,                             // "end of file"
         S_YYerror = 1,                           // error
@@ -523,47 +525,49 @@ namespace xxs {
         S_WHILE = 7,                             // "while"
         S_CONTINUE = 8,                          // "continue"
         S_BREAK = 9,                             // "break"
-        S_NIL = 10,                              // "nil"
-        S_RETURN = 11,                           // "return"
-        S_INT = 12,                              // "int"
-        S_FLOAT = 13,                            // "float"
-        S_IDENT = 14,                            // "identifier"
-        S_PLUS = 15,                             // "+"
-        S_MINUS = 16,                            // "-"
-        S_MUL = 17,                              // "*"
-        S_DIV = 18,                              // "/"
-        S_PPLUS = 19,                            // "++"
-        S_MMINUS = 20,                           // "--"
-        S_LT = 21,                               // "<"
-        S_GT = 22,                               // ">"
-        S_EQ = 23,                               // "="
-        S_EE = 24,                               // "=="
-        S_LTE = 25,                              // "<="
-        S_GTE = 26,                              // ">="
-        S_NE = 27,                               // "!="
-        S_LPAREN = 28,                           // "("
-        S_RPAREN = 29,                           // ")"
-        S_LBLOCK = 30,                           // "{"
-        S_RBLOCK = 31,                           // "}"
-        S_SEMICOLON = 32,                        // ";"
-        S_COMMA = 33,                            // ","
-        S_ETEST = 34,                            // ">>"
-        S_YYACCEPT = 35,                         // $accept
-        S_main = 36,                             // main
-        S_stmts = 37,                            // stmts
-        S_stmt = 38,                             // stmt
-        S_block_1 = 39,                          // block_1
-        S_block_2 = 40,                          // block_2
-        S_for_begin = 41,                        // for_begin
-        S_for_cond = 42,                         // for_cond
-        S_for_step = 43,                         // for_step
-        S_else_1 = 44,                           // else_1
-        S_expr_1 = 45,                           // expr_1
-        S_func_begin = 46,                       // func_begin
-        S_expr = 47,                             // expr
-        S_primary = 48,                          // primary
-        S_idents = 49,                           // idents
-        S_exprs = 50                             // exprs
+        S_RETURN = 10,                           // "return"
+        S_NIL = 11,                              // "nil"
+        S_TTRUE = 12,                            // "true"
+        S_TFALSE = 13,                           // "false"
+        S_INT = 14,                              // "int"
+        S_FLOAT = 15,                            // "float"
+        S_IDENT = 16,                            // "identifier"
+        S_PLUS = 17,                             // "+"
+        S_MINUS = 18,                            // "-"
+        S_MUL = 19,                              // "*"
+        S_DIV = 20,                              // "/"
+        S_PERCENT = 21,                          // "%"
+        S_PPLUS = 22,                            // "++"
+        S_MMINUS = 23,                           // "--"
+        S_LT = 24,                               // "<"
+        S_GT = 25,                               // ">"
+        S_EQ = 26,                               // "="
+        S_EE = 27,                               // "=="
+        S_LTE = 28,                              // "<="
+        S_GTE = 29,                              // ">="
+        S_NE = 30,                               // "!="
+        S_LPAREN = 31,                           // "("
+        S_RPAREN = 32,                           // ")"
+        S_LBLOCK = 33,                           // "{"
+        S_RBLOCK = 34,                           // "}"
+        S_SEMICOLON = 35,                        // ";"
+        S_COMMA = 36,                            // ","
+        S_YYACCEPT = 37,                         // $accept
+        S_main = 38,                             // main
+        S_stmts = 39,                            // stmts
+        S_stmt = 40,                             // stmt
+        S_block_1 = 41,                          // block_1
+        S_block_2 = 42,                          // block_2
+        S_for_begin = 43,                        // for_begin
+        S_for_cond = 44,                         // for_cond
+        S_for_step = 45,                         // for_step
+        S_else_1 = 46,                           // else_1
+        S_expr_1 = 47,                           // expr_1
+        S_func_begin = 48,                       // func_begin
+        S_expr = 49,                             // expr
+        S_primary = 50,                          // primary
+        S_idents = 51,                           // idents
+        S_exprs = 52                             // exprs
       };
     };
 
@@ -1144,6 +1148,21 @@ switch (yykind)
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
+      make_RETURN (location_type l)
+      {
+        return symbol_type (token::RETURN, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_RETURN (const location_type& l)
+      {
+        return symbol_type (token::RETURN, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
       make_NIL (location_type l)
       {
         return symbol_type (token::NIL, std::move (l));
@@ -1159,16 +1178,31 @@ switch (yykind)
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
-      make_RETURN (location_type l)
+      make_TTRUE (location_type l)
       {
-        return symbol_type (token::RETURN, std::move (l));
+        return symbol_type (token::TTRUE, std::move (l));
       }
 #else
       static
       symbol_type
-      make_RETURN (const location_type& l)
+      make_TTRUE (const location_type& l)
       {
-        return symbol_type (token::RETURN, l);
+        return symbol_type (token::TTRUE, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_TFALSE (location_type l)
+      {
+        return symbol_type (token::TFALSE, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_TFALSE (const location_type& l)
+      {
+        return symbol_type (token::TFALSE, l);
       }
 #endif
 #if 201103L <= YY_CPLUSPLUS
@@ -1274,6 +1308,21 @@ switch (yykind)
       make_DIV (const location_type& l)
       {
         return symbol_type (token::DIV, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_PERCENT (location_type l)
+      {
+        return symbol_type (token::PERCENT, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_PERCENT (const location_type& l)
+      {
+        return symbol_type (token::PERCENT, l);
       }
 #endif
 #if 201103L <= YY_CPLUSPLUS
@@ -1499,21 +1548,6 @@ switch (yykind)
       make_COMMA (const location_type& l)
       {
         return symbol_type (token::COMMA, l);
-      }
-#endif
-#if 201103L <= YY_CPLUSPLUS
-      static
-      symbol_type
-      make_ETEST (location_type l)
-      {
-        return symbol_type (token::ETEST, std::move (l));
-      }
-#else
-      static
-      symbol_type
-      make_ETEST (const location_type& l)
-      {
-        return symbol_type (token::ETEST, l);
       }
 #endif
 
@@ -1820,9 +1854,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 255,     ///< Last index in yytable_.
+      yylast_ = 289,     ///< Last index in yytable_.
       yynnts_ = 16,  ///< Number of nonterminal symbols.
-      yyfinal_ = 38 ///< Termination state number.
+      yyfinal_ = 40 ///< Termination state number.
     };
 
 
@@ -1869,10 +1903,11 @@ switch (yykind)
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
-      25,    26,    27,    28,    29,    30,    31,    32,    33,    34
+      25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
+      35,    36
     };
     // Last valid token kind.
-    const int code_max = 289;
+    const int code_max = 291;
 
     if (t <= 0)
       return symbol_kind::S_YYEOF;
@@ -2058,7 +2093,7 @@ switch (yykind)
   }
 
 } // xxs
-#line 2062 "parser.h"
+#line 2097 "parser.h"
 
 
 

@@ -34,18 +34,18 @@
 }
 
 %token FUNCTION "function" IF "if" FOR "for" ELSE "else"  WHILE "while"
-%token CONTINUE "continue" BREAK "break" NIL "nil" RETURN "return"
+%token CONTINUE "continue" BREAK "break" RETURN "return"
+%token NIL "nil" TTRUE "true" TFALSE "false"
 %token INT "int" FLOAT "float" IDENT "identifier"
-%token PLUS "+" MINUS "-" MUL "*" DIV "/" PPLUS "++" MMINUS "--"
+%token PLUS "+" MINUS "-" MUL "*" DIV "/" PERCENT "%" PPLUS "++" MMINUS "--"
 %token LT "<" GT ">" EQ "=" EE "==" LTE "<=" GTE ">=" NE "!="
 %token LPAREN "("  RPAREN ")" LBLOCK "{" RBLOCK "}" SEMICOLON ";" COMMA ","
-%token ETEST ">>"
 
 %right "="
 %left "==" "!="
 %left "<" ">" "<=" ">="
 %left "+" "-"
-%left "*" "/"
+%left "*" "/" "%"
 %right "++" "--"
 %left "("
 
@@ -121,6 +121,7 @@ expr: primary                                                   { $$ = $1;      
 |     expr "-" expr                                             { BINARY(MINUS);                                        }
 |     expr "*" expr                                             { BINARY(MUL);                                          }
 |     expr "/" expr                                             { BINARY(DIV);                                          }
+|     expr "%" expr                                             { BINARY(PERCENT);                                      }
 |     expr ">" expr                                             { BINARY(GT);                                           }
 |     expr "<" expr                                             { BINARY(LT);                                           }
 |     expr ">=" expr                                            { BINARY(GTE);                                          }
@@ -135,6 +136,8 @@ expr: primary                                                   { $$ = $1;      
 
 primary: INT                                                    { $$ = new IntAst($1);                                  }
 |        "nil"                                                  { $$ = new IntAst(NULL);                                }
+|        "true"                                                 { $$ = new IntAst(true);                               }
+|        "false"                                                { $$ = new IntAst(false);                               }
 |        FLOAT                                                  { $$ = new FloatAst($1);                                }
 |        IDENT                                                  { $$ = new VarAccessAst($1);                            }
 ;

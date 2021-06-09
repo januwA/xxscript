@@ -1,12 +1,6 @@
-for (i = 0;i < 10; ++i) {
-  if(i == 5) break;
-  print(i);
+i = 0;
+while (1) {
+  ++i;
+  if (i < 10) print(i);
+  else break;
 }
-
-// // while(1) {
-// //   i++;
-
-// //   if(i == 5) break;
-
-// //   print(i)
-// // }

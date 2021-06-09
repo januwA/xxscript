@@ -22,7 +22,10 @@ extern "C" DLLEXPORT int print(int x)
   return 0;
 }
 
-int bJit, bPrint;
+bool bJit,    // jit执行代码
+    bIr,  // 打印IR
+    bPass,   // 开启优化
+    bParser; // 测试parser
 
 int main(int argc, char *argv[])
 {
@@ -37,12 +40,15 @@ int main(int argc, char *argv[])
 
     if (my_main)
     {
-      xxs::CodeGen cg;
-      cg.codegen(my_main);
-      if (bPrint)
-        cg.print();
-      if (bJit)
-        cg.jit();
+      if (!bParser)
+      {
+        xxs::CodeGen cg{bPass};
+        cg.codegen(my_main);
+        if (bIr)
+          cg.print();
+        if (bJit)
+          cg.jit();
+      }
       delete my_main;
     }
   }
@@ -71,13 +77,25 @@ int parserArgv(int argc, char *argv[])
         opt = argv[i] + 1;
         if (opt == "jit")
         {
-          bJit = 1;
+          bJit = true;
           continue;
         }
 
-        if (opt == "print")
+        if (opt == "ir")
         {
-          bPrint = 1;
+          bIr = true;
+          continue;
+        }
+
+        if (opt == "pass")
+        {
+          bPass = true;
+          continue;
+        }
+
+        if (opt == "parser")
+        {
+          bParser = true;
           continue;
         }
 

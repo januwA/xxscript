@@ -11,6 +11,12 @@
     "xlocale": "cpp",
     "format": "cpp",
     "*.inc": "cpp",
-    "cmath": "cpp"
+    "cmath": "cpp",
+    "exception": "cpp",
+    "coroutine": "cpp",
+    "functional": "cpp",
+    "memory": "cpp",
+    "ostream": "cpp",
+    "type_traits": "cpp"
   }
 }
