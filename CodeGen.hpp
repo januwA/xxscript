@@ -92,7 +92,7 @@ namespace xxs
       auto RT = JIT->getMainJITDylib().createResourceTracker();
       auto TSM = ThreadSafeModule(std::move(m), std::move(llctx));
       JIT->addModule(std::move(TSM), RT);
-      auto ExprSymbol = ExitOnErr(JIT->lookup("__top_main"));
+      auto ExprSymbol = ExitOnErr(JIT->lookup("main"));
       int (*FP)() = (int (*)())(intptr_t)ExprSymbol.getAddress();
       auto val = FP();
       ExitOnErr(RT->remove());
@@ -338,7 +338,7 @@ namespace xxs
       b->SetInsertPoint(parentBB ? parentBB : BB);
 
       // 为函数添加优化器
-      fmp->run(*F);
+      // fmp->run(*F);
 
       --ctx;
       return F;
@@ -370,13 +370,14 @@ namespace xxs
     Value *cg_if(IfAst *ast)
     {
       // 获取正在构建的function
-      auto f = b->GetInsertBlock()->getParent();
+      auto F = b->GetInsertBlock()->getParent();
 
-      auto MergeBB = BasicBlock::Create(*llctx, "merge", f);
-      auto ThenBB = BasicBlock::Create(*llctx, "then", f);
-      auto ElseBB = BasicBlock::Create(*llctx, "else", f);
+      auto MergeBB = BasicBlock::Create(*llctx, "merge", F);
+      auto ThenBB = BasicBlock::Create(*llctx, "then", F);
+      auto ElseBB = BasicBlock::Create(*llctx, "else", F);
 
-      b->CreateCondBr(codegen(ast->cond), ThenBB, ElseBB);
+      auto cond = codegen(ast->cond);
+      b->CreateCondBr(cond, ThenBB, ElseBB);
 
       b->SetInsertPoint(ThenBB);
       cg_stmts(ast->th);

@@ -1,9 +1,12 @@
-function add(x, y) {
-  return x * y;
+for (i = 0;i < 10; ++i) {
+  if(i == 5) break;
+  print(i);
 }
 
-print(add(2, 3));
+// // while(1) {
+// //   i++;
 
-// a = 1;
-// b = 2;
-// print(a + b);
+// //   if(i == 5) break;
+
+// //   print(i)
+// // }

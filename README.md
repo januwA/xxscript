@@ -1,5 +1,9 @@
 # xxscript
 
+> ./x64/Release/xxscript.exe -i ./test.xxs -jit
+
+> ./x64/Release/xxscript.exe -i ./test.xxs -print
+
 ## 数字
 
 ```
@@ -11,7 +15,7 @@
 
 ```
 function name(p1, p2) {
-  return 1 + 1; // ��������
+  return 1 + 1;
 }
 
 name(1,2)

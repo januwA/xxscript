@@ -23,7 +23,7 @@
   typedef  std::vector<xxs::ast_ptr> asts_t;
 
   #define BINARY(op) yylhs.value.as < xxs::ast_ptr > () = new BinaryAst(token::op,  yystack_[2].value.as<xxs::ast_ptr>(),  yystack_[0].value.as<xxs::ast_ptr>())
-  #define IPPMM(i, op) new VarAssignAst( yystack_[i].value.as<std::string>(), token::EQ, new BinaryAst(token::PLUS, new VarAccessAst(yystack_[i].value.as<std::string>()), new IntAst(1)) )
+  #define IPPMM(i, op) new VarAssignAst( yystack_[i].value.as<std::string>(), token::EQ, new BinaryAst(token::op, new VarAccessAst(yystack_[i].value.as<std::string>()), new IntAst(1)) )
 }
 
 %code {
@@ -60,7 +60,7 @@
 %start main
 %%
 
-main: stmts YYEOF                                               { _main = new FuncAst("__top_main", params_t(), $1);    }
+main: stmts YYEOF                                               { _main = new FuncAst("main", params_t(), $1);    }
 |     YYEOF                                                     { _main = nullptr;                                      }
 ;
 
@@ -107,7 +107,7 @@ else_1: %empty                                                  { $$ = new Stmts
 
 expr_1: IDENT "=" expr_1                                        { $$ = new VarAssignAst($1, token::EQ, $3);             }
 |       expr                                                    { $$ = $1;                                              }
-|       func_begin "(" idents ")" block_1                       { $$ = new FuncAst($1, std::move($idents), $block_1);           }
+|       func_begin "(" idents ")" block_1                       { $$ = new FuncAst($1, std::move($idents), $block_1);   }
 ;
 
 func_begin: "function" IDENT                                    { $$ = $2;                                              }
@@ -116,7 +116,7 @@ func_begin: "function" IDENT                                    { $$ = $2;      
 
 expr: primary                                                   { $$ = $1;                                              }
 |     "(" expr_1 ")"                                            { $$ = $2;                                              }
-|     expr "(" exprs ")"                                        { $$ = new CallAst($1, std::move($3));                          }
+|     expr "(" exprs ")"                                        { $$ = new CallAst($1, std::move($3));                  }
 |     expr "+" expr                                             { BINARY(PLUS);                                         }
 |     expr "-" expr                                             { BINARY(MINUS);                                        }
 |     expr "*" expr                                             { BINARY(MUL);                                          }
@@ -141,12 +141,12 @@ primary: INT                                                    { $$ = new IntAs
 
 idents: %empty                                                   { $$ = params_t();                                     }
 |       IDENT                                                    { $$ = params_t{$1};                                   }
-|       idents "," IDENT                                         { $$ = std::move($1); $$.push_back($3);                        }
+|       idents "," IDENT                                         { $$ = std::move($1); $$.push_back($3);                }
 ;
 
 exprs: %empty                                                    { $$ = asts_t();                                       }
 |      expr_1                                                    { $$ = asts_t{$1};                                     }
-|      exprs "," expr_1                                          { $$ = std::move($1); $$.push_back($3);                        }
+|      exprs "," expr_1                                          { $$ = std::move($1); $$.push_back($3);                }
 ;
 
 %%

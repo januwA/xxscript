@@ -55,7 +55,7 @@
   typedef  std::vector<xxs::ast_ptr> asts_t;
 
   #define BINARY(op) yylhs.value.as < xxs::ast_ptr > () = new BinaryAst(token::op,  yystack_[2].value.as<xxs::ast_ptr>(),  yystack_[0].value.as<xxs::ast_ptr>())
-  #define IPPMM(i, op) new VarAssignAst( yystack_[i].value.as<std::string>(), token::EQ, new BinaryAst(token::PLUS, new VarAccessAst(yystack_[i].value.as<std::string>()), new IntAst(1)) )
+  #define IPPMM(i, op) new VarAssignAst( yystack_[i].value.as<std::string>(), token::EQ, new BinaryAst(token::op, new VarAccessAst(yystack_[i].value.as<std::string>()), new IntAst(1)) )
 
 #line 61 "parser.h"
 

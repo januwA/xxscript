@@ -726,7 +726,7 @@ namespace xxs {
             {
   case 2: // main: stmts $end
 #line 63 "parser.y"
-                                                                { _main = new FuncAst("__top_main", params_t(), yystack_[1].value.as < xxs::StmtsAst* > ());    }
+                                                                { _main = new FuncAst("main", params_t(), yystack_[1].value.as < xxs::StmtsAst* > ());    }
 #line 731 "parser.cpp"
     break;
 
@@ -888,7 +888,7 @@ namespace xxs {
 
   case 29: // expr_1: func_begin "(" idents ")" block_1
 #line 110 "parser.y"
-                                                                { yylhs.value.as < xxs::ast_ptr > () = new FuncAst(yystack_[4].value.as < std::string > (), std::move(yystack_[2].value.as < params_t > ()), yystack_[0].value.as < xxs::StmtsAst* > ());           }
+                                                                { yylhs.value.as < xxs::ast_ptr > () = new FuncAst(yystack_[4].value.as < std::string > (), std::move(yystack_[2].value.as < params_t > ()), yystack_[0].value.as < xxs::StmtsAst* > ());   }
 #line 893 "parser.cpp"
     break;
 
@@ -918,7 +918,7 @@ namespace xxs {
 
   case 34: // expr: expr "(" exprs ")"
 #line 119 "parser.y"
-                                                                { yylhs.value.as < xxs::ast_ptr > () = new CallAst(yystack_[3].value.as < xxs::ast_ptr > (), std::move(yystack_[1].value.as < asts_t > ()));                          }
+                                                                { yylhs.value.as < xxs::ast_ptr > () = new CallAst(yystack_[3].value.as < xxs::ast_ptr > (), std::move(yystack_[1].value.as < asts_t > ()));                  }
 #line 923 "parser.cpp"
     break;
 
@@ -1044,7 +1044,7 @@ namespace xxs {
 
   case 55: // idents: idents "," "identifier"
 #line 144 "parser.y"
-                                                                 { yylhs.value.as < params_t > () = std::move(yystack_[2].value.as < params_t > ()); yylhs.value.as < params_t > ().push_back(yystack_[0].value.as < std::string > ());                        }
+                                                                 { yylhs.value.as < params_t > () = std::move(yystack_[2].value.as < params_t > ()); yylhs.value.as < params_t > ().push_back(yystack_[0].value.as < std::string > ());                }
 #line 1049 "parser.cpp"
     break;
 
@@ -1062,7 +1062,7 @@ namespace xxs {
 
   case 58: // exprs: exprs "," expr_1
 #line 149 "parser.y"
-                                                                 { yylhs.value.as < asts_t > () = std::move(yystack_[2].value.as < asts_t > ()); yylhs.value.as < asts_t > ().push_back(yystack_[0].value.as < xxs::ast_ptr > ());                        }
+                                                                 { yylhs.value.as < asts_t > () = std::move(yystack_[2].value.as < asts_t > ()); yylhs.value.as < asts_t > ().push_back(yystack_[0].value.as < xxs::ast_ptr > ());                }
 #line 1067 "parser.cpp"
     break;
 

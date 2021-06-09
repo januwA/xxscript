@@ -23,7 +23,7 @@ INT     [0-9]+
 FLOAT   [0-9]*\.[0-9]+
 IDENT   (?i:[a-z][a-z0-9]*)
 
-%x comment
+%x comment mcomment
 %%
 
 "+"             { _T(PLUS);         }
@@ -65,9 +65,14 @@ IDENT   (?i:[a-z][a-z0-9]*)
 {IDENT}         { _ST(IDENT);       }
 
 
-"//"            { BEGIN(comment);    }
-<comment>.*     {                    }
+"//"            { BEGIN(comment);   }
+<comment>.*     {                   }
 <comment>\n     { BEGIN(0); loc.lines();}
+
+"/*"            { BEGIN(mcomment);  }
+<mcomment>"*/"  { BEGIN(0);         }
+<mcomment>.*    {                   }
+<mcomment>\n    { loc.lines();      }
 
 
 \n              { loc.lines();      }
