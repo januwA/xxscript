@@ -50,6 +50,9 @@ IDENT   (?i:[a-z][a-z0-9]*)
 "}"             { _T(RBLOCK);       }
 ";"             { _T(SEMICOLON);    }
 ","             { _T(COMMA);        }
+"?"             { _T(QUESTION);     }
+":"             { _T(COLON);        }
+
 
 
 "null"          { _T(NIL);          }

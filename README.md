@@ -4,6 +4,17 @@
 
 > ./x64/Release/xxscript.exe -i ./test.xxs -print
 
+## 编译命令
+```
+$ ./x64/Release/xxscript.exe -i test.xxs [options]
+```
+
+options:
+ - -jit    执行代码
+ - -ir     打印LLVM IR
+ - -pass   开启函数优化
+ - -parser 测试语法解析器
+
 ## Number
 
 ```
@@ -64,13 +75,7 @@ while(true) { break; }
 print(`hello {}`, `word`);
 ```
 
-## 编译命令
+## 三元表达式
 ```
-$ ./x64/Release/xxscript.exe -i test.xxs [options]
+print(0 ? `true` : `false`);
 ```
-
-options:
- - -jit    执行代码
- - -ir     打印LLVM IR
- - -pass   开启函数优化
- - -parser 测试语法解析器

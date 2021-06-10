@@ -39,8 +39,9 @@
 %token INT "int" FLOAT "float" IDENT "identifier" STRING "string"
 %token PLUS "+" MINUS "-" MUL "*" DIV "/" PERCENT "%" PPLUS "++" MMINUS "--"
 %token LT "<" GT ">" EQ "=" EE "==" LTE "<=" GTE ">=" NE "!="
-%token LPAREN "("  RPAREN ")" LBLOCK "{" RBLOCK "}" SEMICOLON ";" COMMA ","
+%token LPAREN "("  RPAREN ")" LBLOCK "{" RBLOCK "}" SEMICOLON ";" COMMA "," QUESTION "?" COLON ":"
 
+%right "?"
 %right "="
 %left "==" "!="
 %left "<" ">" "<=" ">="
@@ -108,6 +109,7 @@ else_1: %empty                                                  { $$ = new Stmts
 expr_1: IDENT "=" expr_1                                        { $$ = new VarAssignAst($1, token::EQ, $3);             }
 |       expr                                                    { $$ = $1;                                              }
 |       func_begin "(" idents ")" block_1                       { $$ = new FuncAst($1, std::move($idents), $block_1);   }
+|       expr_1 "?" expr_1 ":" expr_1                            { $$ = new IfAst($1, new StmtsAst({$3}), new StmtsAst({$5}));}
 ;
 
 func_begin: "function" IDENT                                    { $$ = $2;                                              }

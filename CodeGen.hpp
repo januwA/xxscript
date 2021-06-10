@@ -495,35 +495,41 @@ namespace xxs
       else
         b->CreateCondBr(cond, ThenBB, ElseBB);
 
+      Value *ThenV = b->getInt64(0);
       if (!ast->th->stmts.empty())
       {
         F->getBasicBlockList().push_back(ThenBB);
         b->SetInsertPoint(ThenBB);
-        auto r = cg_stmts(ast->th);
+        ThenV = cg_stmts(ast->th);
         // break stmd and continue stmt return nullptr
         // return stmt return type is VoidTyID
         // 解决多个br的BUG和ret
-        if (r && r->getType()->getTypeID() != Type::TypeID::VoidTyID)
+        if (ThenV && !ThenV->getType()->isVoidTy())
         {
           b->CreateBr(MergeBB);
         };
       }
+      ThenBB = b->GetInsertBlock();
 
-      // ThenBB = Builder.GetInsertBlock();
+      Value *ElseV = b->getInt64(0);
       if (!ast->el->empty())
       {
         F->getBasicBlockList().push_back(ElseBB);
         b->SetInsertPoint(ElseBB);
-        auto r = cg_stmts(ast->el);
+        ElseV = cg_stmts(ast->el);
         // 做和then一样的事
-        if (r && r->getType()->getTypeID() != Type::TypeID::VoidTyID)
+        if (ElseV && !ElseV->getType()->isVoidTy())
         {
           b->CreateBr(MergeBB);
         };
       }
+      ElseBB = b->GetInsertBlock();
 
       b->SetInsertPoint(MergeBB);
-      return b->getInt1(0);
+      auto PN = b->CreatePHI(ThenV->getType(), 2);
+      PN->addIncoming(ThenV, ThenBB);
+      PN->addIncoming(ElseV, ElseBB);
+      return PN;
     }
 
     Value *cg_for(ForAst *ast)

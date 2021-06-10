@@ -45,7 +45,6 @@
 #ifndef YY_XXS_PARSER_H_INCLUDED
 # define YY_XXS_PARSER_H_INCLUDED
 // "%code requires" blocks.
-#line 17 "parser.y"
 
   #include <memory>
   #include <format>
@@ -57,7 +56,6 @@
   #define BINARY(op) yylhs.value.as < xxs::ast_ptr > () = new BinaryAst(token::op,  yystack_[2].value.as<xxs::ast_ptr>(),  yystack_[0].value.as<xxs::ast_ptr>())
   #define IPPMM(i, op) new VarAssignAst( yystack_[i].value.as<std::string>(), token::EQ, new BinaryAst(token::op, new VarAccessAst(yystack_[i].value.as<std::string>()), new IntAst(1)) )
 
-#line 61 "parser.h"
 
 
 # include <cstdlib> // std::abort
@@ -194,7 +192,6 @@
 #endif  /* ! defined XXSDEBUG */
 
 namespace xxs {
-#line 198 "parser.h"
 
 
 
@@ -498,7 +495,9 @@ namespace xxs {
     LBLOCK = 289,                  // "{"
     RBLOCK = 290,                  // "}"
     SEMICOLON = 291,               // ";"
-    COMMA = 292                    // ","
+    COMMA = 292,                   // ","
+    QUESTION = 293,                // "?"
+    COLON = 294                    // ":"
       };
       /// Backward compatibility alias (Bison 3.6).
       typedef token_kind_type yytokentype;
@@ -515,7 +514,7 @@ namespace xxs {
     {
       enum symbol_kind_type
       {
-        YYNTOKENS = 38, ///< Number of tokens.
+        YYNTOKENS = 40, ///< Number of tokens.
         S_YYEMPTY = -2,
         S_YYEOF = 0,                             // "end of file"
         S_YYerror = 1,                           // error
@@ -555,22 +554,24 @@ namespace xxs {
         S_RBLOCK = 35,                           // "}"
         S_SEMICOLON = 36,                        // ";"
         S_COMMA = 37,                            // ","
-        S_YYACCEPT = 38,                         // $accept
-        S_main = 39,                             // main
-        S_stmts = 40,                            // stmts
-        S_stmt = 41,                             // stmt
-        S_block_1 = 42,                          // block_1
-        S_block_2 = 43,                          // block_2
-        S_for_begin = 44,                        // for_begin
-        S_for_cond = 45,                         // for_cond
-        S_for_step = 46,                         // for_step
-        S_else_1 = 47,                           // else_1
-        S_expr_1 = 48,                           // expr_1
-        S_func_begin = 49,                       // func_begin
-        S_expr = 50,                             // expr
-        S_primary = 51,                          // primary
-        S_idents = 52,                           // idents
-        S_exprs = 53                             // exprs
+        S_QUESTION = 38,                         // "?"
+        S_COLON = 39,                            // ":"
+        S_YYACCEPT = 40,                         // $accept
+        S_main = 41,                             // main
+        S_stmts = 42,                            // stmts
+        S_stmt = 43,                             // stmt
+        S_block_1 = 44,                          // block_1
+        S_block_2 = 45,                          // block_2
+        S_for_begin = 46,                        // for_begin
+        S_for_cond = 47,                         // for_cond
+        S_for_step = 48,                         // for_step
+        S_else_1 = 49,                           // else_1
+        S_expr_1 = 50,                           // expr_1
+        S_func_begin = 51,                       // func_begin
+        S_expr = 52,                             // expr
+        S_primary = 53,                          // primary
+        S_idents = 54,                           // idents
+        S_exprs = 55                             // exprs
       };
     };
 
@@ -1570,6 +1571,36 @@ switch (yykind)
         return symbol_type (token::COMMA, l);
       }
 #endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_QUESTION (location_type l)
+      {
+        return symbol_type (token::QUESTION, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_QUESTION (const location_type& l)
+      {
+        return symbol_type (token::QUESTION, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_COLON (location_type l)
+      {
+        return symbol_type (token::COLON, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_COLON (const location_type& l)
+      {
+        return symbol_type (token::COLON, l);
+      }
+#endif
 
 
   private:
@@ -1874,7 +1905,7 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 304,     ///< Last index in yytable_.
+      yylast_ = 308,     ///< Last index in yytable_.
       yynnts_ = 16,  ///< Number of nonterminal symbols.
       yyfinal_ = 41 ///< Termination state number.
     };
@@ -1924,10 +1955,10 @@ switch (yykind)
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
       25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
-      35,    36,    37
+      35,    36,    37,    38,    39
     };
     // Last valid token kind.
-    const int code_max = 292;
+    const int code_max = 294;
 
     if (t <= 0)
       return symbol_kind::S_YYEOF;
@@ -2115,7 +2146,6 @@ switch (yykind)
   }
 
 } // xxs
-#line 2119 "parser.h"
 
 
 
