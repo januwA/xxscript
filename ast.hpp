@@ -25,6 +25,7 @@ namespace xxs
     While,
     Break,
     Continue,
+    Bool,
   };
   struct Ast
   {
@@ -67,7 +68,7 @@ namespace xxs
 
   struct IntAst : public Ast
   {
-    int num{0};
+    int64_t num{0};
     IntAst(int num) : num(num) {}
     AT id() { return AT::Int; }
     std::string toString() { return std::to_string(num); };
@@ -75,8 +76,8 @@ namespace xxs
 
   struct FloatAst : public Ast
   {
-    float num{0};
-    FloatAst(float num) : num(num) {}
+    double num{0};
+    FloatAst(double num) : num(num) {}
     AT id() { return AT::Float; }
     std::string toString() { return std::to_string(num); };
   };
@@ -84,7 +85,7 @@ namespace xxs
   struct StrAst : public Ast
   {
     std::string str;
-    StrAst(std::string_view str) : str(str) {  }
+    StrAst(std::string_view str) : str(str) {}
     AT id() { return AT::Str; }
     std::string toString() { return str; };
   };

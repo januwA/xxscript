@@ -136,8 +136,8 @@ expr: primary                                                   { $$ = $1;      
 
 primary: "int"                                                  { $$ = new IntAst($1);                                  }
 |        "null"                                                 { $$ = new IntAst(NULL);                                }
-|        "true"                                                 { $$ = new IntAst(true);                                }
-|        "false"                                                { $$ = new IntAst(false);                               }
+|        "true"                                                 { $$ = new IntAst(1);                               }
+|        "false"                                                { $$ = new IntAst(0);                              }
 |        FLOAT                                                  { $$ = new FloatAst($1);                                }
 |        IDENT                                                  { $$ = new VarAccessAst($1);                            }
 |        STRING                                                 { $$ = new StrAst($1);                                  }

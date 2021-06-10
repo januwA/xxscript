@@ -13,8 +13,8 @@
 
 ## Bool
 ```
-true  i1
-false i1
+true  i64
+false i64
 ```
 
 ## Function

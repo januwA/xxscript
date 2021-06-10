@@ -44,12 +44,14 @@
 
 
 // Unqualified %code blocks.
+#line 29 "parser.y"
 
   #include <iostream>
   #include "ast.hpp"
 
   extern xxs::parser::symbol_type yylex();
 
+#line 55 "parser.cpp"
 
 
 #ifndef YY_
@@ -141,6 +143,7 @@
 #define YYRECOVERING()  (!!yyerrstatus_)
 
 namespace xxs {
+#line 147 "parser.cpp"
 
   /// Build a parser object.
   parser::parser (xxs::FuncAst *& _main_yyarg)
@@ -727,250 +730,373 @@ namespace xxs {
           switch (yyn)
             {
   case 2: // main: stmts $end
+#line 63 "parser.y"
                                                                 { _main = new FuncAst("main", params_t(), yystack_[1].value.as < xxs::StmtsAst* > ());    }
+#line 736 "parser.cpp"
     break;
 
   case 3: // main: $end
+#line 64 "parser.y"
                                                                 { _main = nullptr;                                      }
+#line 742 "parser.cpp"
     break;
 
   case 4: // stmts: stmt
+#line 67 "parser.y"
                                                                 { yylhs.value.as < xxs::StmtsAst* > () = new StmtsAst({yystack_[0].value.as < xxs::ast_ptr > ()});                              }
+#line 748 "parser.cpp"
     break;
 
   case 5: // stmts: stmts stmt
+#line 68 "parser.y"
                                                                 { yylhs.value.as < xxs::StmtsAst* > () = yystack_[1].value.as < xxs::StmtsAst* > (); yylhs.value.as < xxs::StmtsAst* > ()->push(yystack_[0].value.as < xxs::ast_ptr > ());                                }
+#line 754 "parser.cpp"
     break;
 
   case 6: // stmt: expr_1
+#line 72 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > ()=yystack_[0].value.as < xxs::ast_ptr > ();                                                }
+#line 760 "parser.cpp"
     break;
 
   case 7: // stmt: expr_1 ";"
+#line 73 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > ()=yystack_[1].value.as < xxs::ast_ptr > ();                                                }
+#line 766 "parser.cpp"
     break;
 
   case 8: // stmt: "return" expr_1 ";"
+#line 74 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = new RetAst(yystack_[1].value.as < xxs::ast_ptr > ());                                  }
+#line 772 "parser.cpp"
     break;
 
   case 9: // stmt: "return" ";"
+#line 75 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = new RetAst();                                    }
+#line 778 "parser.cpp"
     break;
 
   case 10: // stmt: "if" "(" expr_1 ")" block_2 else_1
+#line 76 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = new IfAst(yystack_[3].value.as < xxs::ast_ptr > (), yystack_[1].value.as < xxs::StmtsAst* > (), yystack_[0].value.as < xxs::StmtsAst* > ());                }
+#line 784 "parser.cpp"
     break;
 
   case 11: // stmt: for_begin for_cond ";" for_step ")" block_2
+#line 77 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = new ForAst(yystack_[5].value.as < xxs::ast_ptr > (), yystack_[4].value.as < xxs::ast_ptr > (), yystack_[2].value.as < xxs::ast_ptr > (), yystack_[0].value.as < xxs::StmtsAst* > ());                }
+#line 790 "parser.cpp"
     break;
 
   case 12: // stmt: "while" "(" expr_1 ")" block_2
+#line 78 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = new ForAst(nullptr, yystack_[2].value.as < xxs::ast_ptr > (), nullptr, yystack_[0].value.as < xxs::StmtsAst* > ());   }
+#line 796 "parser.cpp"
     break;
 
   case 13: // stmt: "continue" ";"
+#line 79 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = new ContinueAst();                               }
+#line 802 "parser.cpp"
     break;
 
   case 14: // stmt: "break" ";"
+#line 80 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = new BreakAst();                                  }
+#line 808 "parser.cpp"
     break;
 
   case 15: // block_1: "{" stmts "}"
+#line 83 "parser.y"
                                                                 { yylhs.value.as < xxs::StmtsAst* > () = yystack_[1].value.as < xxs::StmtsAst* > ();                                          }
+#line 814 "parser.cpp"
     break;
 
   case 16: // block_1: "{" "}"
+#line 84 "parser.y"
                                                                 { yylhs.value.as < xxs::StmtsAst* > () = new StmtsAst();                                  }
+#line 820 "parser.cpp"
     break;
 
   case 17: // block_2: block_1
+#line 87 "parser.y"
                                                                 { yylhs.value.as < xxs::StmtsAst* > () = yystack_[0].value.as < xxs::StmtsAst* > ();                                              }
+#line 826 "parser.cpp"
     break;
 
   case 18: // block_2: stmt
+#line 88 "parser.y"
                                                                 { yylhs.value.as < xxs::StmtsAst* > () = new StmtsAst({ yystack_[0].value.as < xxs::ast_ptr > () });                            }
+#line 832 "parser.cpp"
     break;
 
   case 19: // for_begin: "for" "(" expr_1 ";"
+#line 92 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = yystack_[1].value.as < xxs::ast_ptr > ();                                         }
+#line 838 "parser.cpp"
     break;
 
   case 20: // for_begin: "for" "(" ";"
+#line 93 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = nullptr;                                         }
+#line 844 "parser.cpp"
     break;
 
   case 21: // for_cond: expr_1
+#line 96 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = yystack_[0].value.as < xxs::ast_ptr > ();                                              }
+#line 850 "parser.cpp"
     break;
 
   case 22: // for_cond: %empty
+#line 97 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = nullptr;                                         }
+#line 856 "parser.cpp"
     break;
 
   case 23: // for_step: expr_1
+#line 100 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = yystack_[0].value.as < xxs::ast_ptr > ();                                              }
+#line 862 "parser.cpp"
     break;
 
   case 24: // for_step: %empty
+#line 101 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = nullptr;                                         }
+#line 868 "parser.cpp"
     break;
 
   case 25: // else_1: %empty
+#line 104 "parser.y"
                                                                 { yylhs.value.as < xxs::StmtsAst* > () = new StmtsAst();                                  }
+#line 874 "parser.cpp"
     break;
 
   case 26: // else_1: "else" block_2
+#line 105 "parser.y"
                                                                 { yylhs.value.as < xxs::StmtsAst* > () = yystack_[0].value.as < xxs::StmtsAst* > ();                                              }
+#line 880 "parser.cpp"
     break;
 
   case 27: // expr_1: "identifier" "=" expr_1
+#line 108 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = new VarAssignAst(yystack_[2].value.as < std::string > (), token::EQ, yystack_[0].value.as < xxs::ast_ptr > ());             }
+#line 886 "parser.cpp"
     break;
 
   case 28: // expr_1: expr
+#line 109 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = yystack_[0].value.as < xxs::ast_ptr > ();                                              }
+#line 892 "parser.cpp"
     break;
 
   case 29: // expr_1: func_begin "(" idents ")" block_1
+#line 110 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = new FuncAst(yystack_[4].value.as < std::string > (), std::move(yystack_[2].value.as < params_t > ()), yystack_[0].value.as < xxs::StmtsAst* > ());   }
+#line 898 "parser.cpp"
     break;
 
   case 30: // func_begin: "function" "identifier"
+#line 113 "parser.y"
                                                                 { yylhs.value.as < std::string > () = yystack_[0].value.as < std::string > ();                                              }
+#line 904 "parser.cpp"
     break;
 
   case 31: // func_begin: "function"
+#line 114 "parser.y"
                                                                 { yylhs.value.as < std::string > () = "";                                              }
+#line 910 "parser.cpp"
     break;
 
   case 32: // expr: primary
+#line 117 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = yystack_[0].value.as < xxs::ast_ptr > ();                                              }
+#line 916 "parser.cpp"
     break;
 
   case 33: // expr: "(" expr_1 ")"
+#line 118 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = yystack_[1].value.as < xxs::ast_ptr > ();                                              }
+#line 922 "parser.cpp"
     break;
 
   case 34: // expr: expr "(" exprs ")"
+#line 119 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = new CallAst(yystack_[3].value.as < xxs::ast_ptr > (), std::move(yystack_[1].value.as < asts_t > ()));                  }
+#line 928 "parser.cpp"
     break;
 
   case 35: // expr: expr "+" expr
+#line 120 "parser.y"
                                                                 { BINARY(PLUS);                                         }
+#line 934 "parser.cpp"
     break;
 
   case 36: // expr: expr "-" expr
+#line 121 "parser.y"
                                                                 { BINARY(MINUS);                                        }
+#line 940 "parser.cpp"
     break;
 
   case 37: // expr: expr "*" expr
+#line 122 "parser.y"
                                                                 { BINARY(MUL);                                          }
+#line 946 "parser.cpp"
     break;
 
   case 38: // expr: expr "/" expr
+#line 123 "parser.y"
                                                                 { BINARY(DIV);                                          }
+#line 952 "parser.cpp"
     break;
 
   case 39: // expr: expr "%" expr
+#line 124 "parser.y"
                                                                 { BINARY(PERCENT);                                      }
+#line 958 "parser.cpp"
     break;
 
   case 40: // expr: expr ">" expr
+#line 125 "parser.y"
                                                                 { BINARY(GT);                                           }
+#line 964 "parser.cpp"
     break;
 
   case 41: // expr: expr "<" expr
+#line 126 "parser.y"
                                                                 { BINARY(LT);                                           }
+#line 970 "parser.cpp"
     break;
 
   case 42: // expr: expr ">=" expr
+#line 127 "parser.y"
                                                                 { BINARY(GTE);                                          }
+#line 976 "parser.cpp"
     break;
 
   case 43: // expr: expr "<=" expr
+#line 128 "parser.y"
                                                                 { BINARY(LTE);                                          }
+#line 982 "parser.cpp"
     break;
 
   case 44: // expr: expr "==" expr
+#line 129 "parser.y"
                                                                 { BINARY(EE);                                           }
+#line 988 "parser.cpp"
     break;
 
   case 45: // expr: expr "!=" expr
+#line 130 "parser.y"
                                                                 { BINARY(NE);                                           }
+#line 994 "parser.cpp"
     break;
 
   case 46: // expr: "identifier" "++"
+#line 131 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = new StmtsAst{{ new VarAccessAst(yystack_[1].value.as < std::string > ()), IPPMM(1, PLUS), }, false}; }
+#line 1000 "parser.cpp"
     break;
 
   case 47: // expr: "identifier" "--"
+#line 132 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = new StmtsAst{{ new VarAccessAst(yystack_[1].value.as < std::string > ()), IPPMM(1, MINUS) }, false}; }
+#line 1006 "parser.cpp"
     break;
 
   case 48: // expr: "++" "identifier"
+#line 133 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = IPPMM(0, PLUS);                                  }
+#line 1012 "parser.cpp"
     break;
 
   case 49: // expr: "--" "identifier"
+#line 134 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = IPPMM(0, MINUS);                                 }
+#line 1018 "parser.cpp"
     break;
 
   case 50: // primary: "int"
+#line 137 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = new IntAst(yystack_[0].value.as < int > ());                                  }
+#line 1024 "parser.cpp"
     break;
 
   case 51: // primary: "null"
+#line 138 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = new IntAst(NULL);                                }
+#line 1030 "parser.cpp"
     break;
 
   case 52: // primary: "true"
-                                                                { yylhs.value.as < xxs::ast_ptr > () = new IntAst(true);                                }
+#line 139 "parser.y"
+                                                                { yylhs.value.as < xxs::ast_ptr > () = new IntAst(1);                               }
+#line 1036 "parser.cpp"
     break;
 
   case 53: // primary: "false"
-                                                                { yylhs.value.as < xxs::ast_ptr > () = new IntAst(false);                               }
+#line 140 "parser.y"
+                                                                { yylhs.value.as < xxs::ast_ptr > () = new IntAst(0);                              }
+#line 1042 "parser.cpp"
     break;
 
   case 54: // primary: "float"
+#line 141 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = new FloatAst(yystack_[0].value.as < float > ());                                }
+#line 1048 "parser.cpp"
     break;
 
   case 55: // primary: "identifier"
+#line 142 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = new VarAccessAst(yystack_[0].value.as < std::string > ());                            }
+#line 1054 "parser.cpp"
     break;
 
   case 56: // primary: "string"
+#line 143 "parser.y"
                                                                 { yylhs.value.as < xxs::ast_ptr > () = new StrAst(yystack_[0].value.as < std::string > ());                                  }
+#line 1060 "parser.cpp"
     break;
 
   case 57: // idents: %empty
+#line 146 "parser.y"
                                                                  { yylhs.value.as < params_t > () = params_t();                                     }
+#line 1066 "parser.cpp"
     break;
 
   case 58: // idents: "identifier"
+#line 147 "parser.y"
                                                                  { yylhs.value.as < params_t > () = params_t{yystack_[0].value.as < std::string > ()};                                   }
+#line 1072 "parser.cpp"
     break;
 
   case 59: // idents: idents "," "identifier"
+#line 148 "parser.y"
                                                                  { yylhs.value.as < params_t > () = std::move(yystack_[2].value.as < params_t > ()); yylhs.value.as < params_t > ().push_back(yystack_[0].value.as < std::string > ());                }
+#line 1078 "parser.cpp"
     break;
 
   case 60: // exprs: %empty
+#line 151 "parser.y"
                                                                  { yylhs.value.as < asts_t > () = asts_t();                                       }
+#line 1084 "parser.cpp"
     break;
 
   case 61: // exprs: expr_1
+#line 152 "parser.y"
                                                                  { yylhs.value.as < asts_t > () = asts_t{yystack_[0].value.as < xxs::ast_ptr > ()};                                     }
+#line 1090 "parser.cpp"
     break;
 
   case 62: // exprs: exprs "," expr_1
+#line 153 "parser.y"
                                                                  { yylhs.value.as < asts_t > () = std::move(yystack_[2].value.as < asts_t > ()); yylhs.value.as < asts_t > ().push_back(yystack_[0].value.as < xxs::ast_ptr > ());                }
+#line 1096 "parser.cpp"
     break;
 
 
+#line 1100 "parser.cpp"
 
             default:
               break;
@@ -1383,7 +1509,9 @@ namespace xxs {
 
 
 } // xxs
+#line 1513 "parser.cpp"
 
+#line 156 "parser.y"
 
 
 #undef BINARY

@@ -12,21 +12,119 @@ extern FILE *yyin, *yyout;
 
 int parserArgv(int argc, char *argv[]);
 
-
 #ifdef _WIN32
 #define DLLEXPORT __declspec(dllexport)
 #else
 #define DLLEXPORT
 #endif
 
-extern "C" DLLEXPORT int print(int x)
+extern "C" DLLEXPORT int print(int count, char *_format, ...)
 {
-  std::cout << std::format("{}", x) << std::endl;
+  // printf("count:%d\n", count);
+  // printf("format:%s\n", _format);
+
+  va_list vl;
+  va_start(vl, _format);
+  char *c1, *c2, *c3, *c4, *c5, *c6, *c7, *c8, *c9, *c10;
+  switch (count)
+  {
+  case 0:
+    std::cout << std::format(_format) << std::endl;
+    break;
+  case 1:
+    std::cout << std::format(_format, va_arg(vl, char *)) << std::endl;
+    break;
+  case 2:
+    c1 = va_arg(vl, char *);
+    c2 = va_arg(vl, char *);
+    std::cout << std::format(_format, c1, c2) << std::endl;
+    break;
+  case 3:
+    c1 = va_arg(vl, char *);
+    c2 = va_arg(vl, char *);
+    c3 = va_arg(vl, char *);
+    std::cout << std::format(_format, c1, c2, c3) << std::endl;
+    break;
+  case 4:
+    c1 = va_arg(vl, char *);
+    c2 = va_arg(vl, char *);
+    c3 = va_arg(vl, char *);
+    c4 = va_arg(vl, char *);
+    std::cout << std::format(_format, c1, c2, c3, c4) << std::endl;
+    break;
+  case 5:
+    c1 = va_arg(vl, char *);
+    c2 = va_arg(vl, char *);
+    c3 = va_arg(vl, char *);
+    c4 = va_arg(vl, char *);
+    c5 = va_arg(vl, char *);
+    std::cout << std::format(_format, c1, c2, c3, c4, c5) << std::endl;
+    break;
+  case 6:
+    c1 = va_arg(vl, char *);
+    c2 = va_arg(vl, char *);
+    c3 = va_arg(vl, char *);
+    c4 = va_arg(vl, char *);
+    c5 = va_arg(vl, char *);
+    c6 = va_arg(vl, char *);
+    std::cout << std::format(_format, c1, c2, c3, c4, c5, c6) << std::endl;
+    break;
+  case 7:
+    c1 = va_arg(vl, char *);
+    c2 = va_arg(vl, char *);
+    c3 = va_arg(vl, char *);
+    c4 = va_arg(vl, char *);
+    c5 = va_arg(vl, char *);
+    c6 = va_arg(vl, char *);
+    c7 = va_arg(vl, char *);
+    std::cout << std::format(_format, c1, c2, c3, c4, c5, c6, c7) << std::endl;
+    break;
+  case 8:
+    c1 = va_arg(vl, char *);
+    c2 = va_arg(vl, char *);
+    c3 = va_arg(vl, char *);
+    c4 = va_arg(vl, char *);
+    c5 = va_arg(vl, char *);
+    c6 = va_arg(vl, char *);
+    c7 = va_arg(vl, char *);
+    c8 = va_arg(vl, char *);
+    std::cout << std::format(_format, c1, c2, c3, c4, c5, c6, c7, c8) << std::endl;
+    break;
+  case 9:
+    c1 = va_arg(vl, char *);
+    c2 = va_arg(vl, char *);
+    c3 = va_arg(vl, char *);
+    c4 = va_arg(vl, char *);
+    c5 = va_arg(vl, char *);
+    c6 = va_arg(vl, char *);
+    c7 = va_arg(vl, char *);
+    c8 = va_arg(vl, char *);
+    c9 = va_arg(vl, char *);
+    std::cout << std::format(_format, c1, c2, c3, c4, c5, c6, c7, c8, c9) << std::endl;
+    break;
+  case 10:
+    c1 = va_arg(vl, char *);
+    c2 = va_arg(vl, char *);
+    c3 = va_arg(vl, char *);
+    c4 = va_arg(vl, char *);
+    c5 = va_arg(vl, char *);
+    c6 = va_arg(vl, char *);
+    c7 = va_arg(vl, char *);
+    c8 = va_arg(vl, char *);
+    c9 = va_arg(vl, char *);
+    c10 = va_arg(vl, char *);
+    std::cout << std::format(_format, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10) << std::endl;
+    break;
+  default:
+    break;
+  }
+
+  va_end(vl);
   return 0;
 }
 
-bool bJit,    // jit执行代码
-    bIr,  // 打印IR
+bool bJit,   // jit执行代码
+    bIr,     // 打印IR
     bPass,   // 开启优化
     bParser; // 测试parser
 

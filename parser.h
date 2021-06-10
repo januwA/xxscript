@@ -45,6 +45,7 @@
 #ifndef YY_XXS_PARSER_H_INCLUDED
 # define YY_XXS_PARSER_H_INCLUDED
 // "%code requires" blocks.
+#line 17 "parser.y"
 
   #include <memory>
   #include <format>
@@ -56,6 +57,7 @@
   #define BINARY(op) yylhs.value.as < xxs::ast_ptr > () = new BinaryAst(token::op,  yystack_[2].value.as<xxs::ast_ptr>(),  yystack_[0].value.as<xxs::ast_ptr>())
   #define IPPMM(i, op) new VarAssignAst( yystack_[i].value.as<std::string>(), token::EQ, new BinaryAst(token::op, new VarAccessAst(yystack_[i].value.as<std::string>()), new IntAst(1)) )
 
+#line 61 "parser.h"
 
 
 # include <cstdlib> // std::abort
@@ -192,6 +194,7 @@
 #endif  /* ! defined XXSDEBUG */
 
 namespace xxs {
+#line 198 "parser.h"
 
 
 
@@ -2112,6 +2115,7 @@ switch (yykind)
   }
 
 } // xxs
+#line 2119 "parser.h"
 
 
 

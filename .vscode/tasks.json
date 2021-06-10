@@ -53,5 +53,12 @@
         "command": "cmd.exe /C \"${workspaceFolder}/x64/Release/xxscript.exe -i ${workspaceFolder}/test.xxs -parser\""
       }
     },
+    {
+      "label": "test.c",
+      "type": "shell",
+      "windows": {
+        "command": "clang.exe -emit-llvm -S test.c -o test.c.ll"
+      }
+    },
   ]
 }

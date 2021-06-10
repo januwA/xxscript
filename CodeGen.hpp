@@ -75,9 +75,7 @@ namespace xxs
     // 声明外部函数
     void declares()
     {
-#define i32Ty Type::getInt32Ty(*llctx)
-
-      auto print = Function::Create(FunctionType::get(i32Ty, {i32Ty}, false), Function::ExternalLinkage, "print", m.get());
+      auto print = Function::Create(FunctionType::get(b->getInt64Ty(), {b->getInt32Ty(), b->getInt8PtrTy()}, true), Function::ExternalLinkage, "print", m.get());
       ctx.setf("print", print);
     }
 
@@ -221,7 +219,7 @@ namespace xxs
   private:
     Value *cg_int(IntAst *ast)
     {
-      return b->getInt32(ast->num);
+      return b->getInt64(ast->num);
     }
 
     Value *cg_float(FloatAst *ast)
@@ -251,7 +249,7 @@ namespace xxs
       }
 
       // printf("def:%s\n", ast->name);
-      return b->getInt32(0);
+      return b->getInt64(0);
     }
 
     Value *cg_binary(BinaryAst *ast)
@@ -261,7 +259,12 @@ namespace xxs
       switch (ast->op)
       {
       case parser::token::PLUS:
-        return b->CreateAdd(l, r);
+      {
+        if (l->getType()->getTypeID() == Type::TypeID::DoubleTyID || r->getType()->getTypeID() == Type::TypeID::DoubleTyID)
+          return b->CreateFAdd(b->CreateSIToFP(l, b->getDoubleTy()), b->CreateSIToFP(r, b->getDoubleTy()));
+        else
+          return b->CreateAdd(l, r);
+      }
       case parser::token::MINUS:
         return b->CreateSub(l, r);
       case parser::token::MUL:
@@ -300,8 +303,30 @@ namespace xxs
       }
 
       std::vector<Value *> argv;
-      for (auto a : ast->args)
-        argv.push_back(codegen(a));
+      if (F->getName().str() == "print")
+      {
+        argv.push_back(b->getInt32(ast->args.size() - 1));
+        for (auto a : ast->args)
+        {
+          auto v = codegen(a);
+          if (v->getType()->isDoubleTy())
+          {
+            auto d = reinterpret_cast<ConstantFP *>(v)->getValueAPF().convertToDouble();
+            v = b->CreateGlobalString(std::to_string(d));
+          }
+          else if (v->getType()->isIntegerTy())
+          {
+            auto i = reinterpret_cast<ConstantInt *>(v)->getSExtValue();
+            v = b->CreateGlobalString(std::to_string(i));
+          }
+          argv.push_back(v);
+        }
+      }
+      else
+      {
+        for (auto a : ast->args)
+          argv.push_back(codegen(a));
+      }
       return b->CreateCall(reinterpret_cast<Function *>(F), argv);
     }
 

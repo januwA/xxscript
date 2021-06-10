@@ -17,6 +17,16 @@
     "functional": "cpp",
     "memory": "cpp",
     "ostream": "cpp",
-    "type_traits": "cpp"
+    "type_traits": "cpp",
+    "string": "cpp",
+    "*.rh": "cpp",
+    "algorithm": "cpp",
+    "atomic": "cpp",
+    "bitset": "cpp",
+    "charconv": "cpp",
+    "chrono": "cpp",
+    "future": "cpp",
+    "iterator": "cpp",
+    "xloctime": "cpp"
   }
 }

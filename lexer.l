@@ -13,8 +13,8 @@ std::string str_buf;
 #define YY_DECL xxs::parser::symbol_type yylex()
 #define yyterminate() return xxs::parser::make_XXSEOF(loc)
 #define _T(t)  return xxs::parser::make_##t(loc)
-#define _IT(t) return xxs::parser::make_##t(std::stoi(yytext), loc)
-#define _FT(t) return xxs::parser::make_##t(std::stof(yytext), loc)
+#define _IT(t) return xxs::parser::make_##t(std::stoll(yytext), loc)
+#define _FT(t) return xxs::parser::make_##t(std::stod(yytext), loc)
 #define _ST(t) return xxs::parser::make_##t(std::string(yytext, yyleng), loc)
 #define _STR   return xxs::parser::make_STRING(str_buf, loc)
 
