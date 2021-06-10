@@ -259,32 +259,95 @@ namespace xxs
       switch (ast->op)
       {
       case parser::token::PLUS:
-      {
-        if (l->getType()->getTypeID() == Type::TypeID::DoubleTyID || r->getType()->getTypeID() == Type::TypeID::DoubleTyID)
+        if (l->getType()->isDoubleTy() || r->getType()->isDoubleTy())
           return b->CreateFAdd(b->CreateSIToFP(l, b->getDoubleTy()), b->CreateSIToFP(r, b->getDoubleTy()));
         else
           return b->CreateAdd(l, r);
-      }
       case parser::token::MINUS:
-        return b->CreateSub(l, r);
+        if (l->getType()->isDoubleTy() || r->getType()->isDoubleTy())
+          return b->CreateFSub(b->CreateSIToFP(l, b->getDoubleTy()), b->CreateSIToFP(r, b->getDoubleTy()));
+        else
+          return b->CreateSub(l, r);
       case parser::token::MUL:
-        return b->CreateMul(l, r);
+        if (l->getType()->isDoubleTy() || r->getType()->isDoubleTy())
+          return b->CreateFMul(b->CreateSIToFP(l, b->getDoubleTy()), b->CreateSIToFP(r, b->getDoubleTy()));
+        else
+          return b->CreateMul(l, r);
+
+        // TODO: 5 / 2 => 2.5
       case parser::token::DIV:
-        return b->CreateExactSDiv(l, r);
+        if (l->getType()->isDoubleTy() || r->getType()->isDoubleTy())
+          return b->CreateFDiv(b->CreateSIToFP(l, b->getDoubleTy()), b->CreateSIToFP(r, b->getDoubleTy()));
+        else
+          return b->CreateSDiv(l, r);
+
+        // TODO: 5.0 % 4 => 1
       case parser::token::PERCENT:
-        return b->CreateSRem(l, r);
+        if (l->getType()->isDoubleTy() || r->getType()->isDoubleTy())
+          return b->CreateFRem(b->CreateSIToFP(l, b->getDoubleTy()), b->CreateSIToFP(r, b->getDoubleTy()));
+        else
+          return b->CreateSRem(l, r);
       case parser::token::LT:
-        return b->CreateICmpSLT(l, r);
+      {
+        if (l->getType()->isDoubleTy() || r->getType()->isDoubleTy())
+          l = b->CreateFCmpOLT(b->CreateSIToFP(l, b->getDoubleTy()), b->CreateSIToFP(r, b->getDoubleTy()));
+        else
+          l = b->CreateICmpSLT(l, r);
+        l = b->CreateUIToFP(l, b->getDoubleTy());
+        return b->CreateFPToSI(l, b->getInt64Ty());
+      }
       case parser::token::GT:
-        return b->CreateICmpSGT(l, r);
+      {
+        if (l->getType()->isDoubleTy() || r->getType()->isDoubleTy())
+          l = b->CreateFCmpOGT(b->CreateSIToFP(l, b->getDoubleTy()), b->CreateSIToFP(r, b->getDoubleTy()));
+        else
+          l = b->CreateICmpSGT(l, r);
+        l = b->CreateUIToFP(l, b->getDoubleTy());
+        return b->CreateFPToSI(l, b->getInt64Ty());
+      }
       case parser::token::LTE:
-        return b->CreateICmpSLE(l, r);
+      {
+        if (l->getType()->isDoubleTy() || r->getType()->isDoubleTy())
+          l = b->CreateFCmpOLE(b->CreateSIToFP(l, b->getDoubleTy()), b->CreateSIToFP(r, b->getDoubleTy()));
+        else
+          l = b->CreateICmpSLE(l, r);
+        l = b->CreateUIToFP(l, b->getDoubleTy());
+        return b->CreateFPToSI(l, b->getInt64Ty());
+      }
       case parser::token::GTE:
-        return b->CreateICmpSGE(l, r);
+      {
+        if (l->getType()->isDoubleTy() || r->getType()->isDoubleTy())
+          l = b->CreateFCmpOGE(b->CreateSIToFP(l, b->getDoubleTy()), b->CreateSIToFP(r, b->getDoubleTy()));
+        else
+          l = b->CreateICmpSGE(l, r);
+        l = b->CreateUIToFP(l, b->getDoubleTy());
+        return b->CreateFPToSI(l, b->getInt64Ty());
+      }
       case parser::token::EE:
-        return b->CreateICmpEQ(l, r);
+      {
+        if (l->getType()->isDoubleTy() || r->getType()->isDoubleTy())
+          l = b->CreateFCmpOEQ(b->CreateSIToFP(l, b->getDoubleTy()), b->CreateSIToFP(r, b->getDoubleTy()));
+        else
+          l = b->CreateICmpEQ(l, r);
+        l = b->CreateUIToFP(l, b->getDoubleTy());
+        return b->CreateFPToSI(l, b->getInt64Ty());
+      }
       case parser::token::NE:
-        return b->CreateICmpNE(l, r);
+      {
+        if (l->getType()->isDoubleTy() || r->getType()->isDoubleTy())
+        {
+          l = b->CreateFCmpONE(b->CreateSIToFP(l, b->getDoubleTy()), b->CreateSIToFP(r, b->getDoubleTy()));
+        }
+        else
+        {
+          l = b->CreateICmpNE(l, r);
+        }
+        // 0.0 / 1.0
+        l = b->CreateUIToFP(l, b->getDoubleTy());
+
+        // 0.0 / 1.0 -> 0 / 1
+        return b->CreateFPToSI(l, b->getInt64Ty());
+      }
       default:
         break;
       }
@@ -312,12 +375,12 @@ namespace xxs
           if (v->getType()->isDoubleTy())
           {
             auto d = reinterpret_cast<ConstantFP *>(v)->getValueAPF().convertToDouble();
-            v = b->CreateGlobalString(std::to_string(d));
+            v = b->CreateGlobalStringPtr(std::to_string(d));
           }
           else if (v->getType()->isIntegerTy())
           {
             auto i = reinterpret_cast<ConstantInt *>(v)->getSExtValue();
-            v = b->CreateGlobalString(std::to_string(i));
+            v = b->CreateGlobalStringPtr(std::to_string(i));
           }
           argv.push_back(v);
         }

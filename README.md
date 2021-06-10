@@ -59,6 +59,11 @@ for(i=0; i<10; ++i) {
 while(true) { break; }
 ```
 
+## string
+```
+print(`hello {}`, `word`);
+```
+
 ## 编译命令
 ```
 $ ./x64/Release/xxscript.exe -i test.xxs [options]
