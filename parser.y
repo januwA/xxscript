@@ -35,8 +35,8 @@
 
 %token FUNCTION "function" IF "if" FOR "for" ELSE "else"  WHILE "while"
 %token CONTINUE "continue" BREAK "break" RETURN "return"
-%token NIL "nil" TTRUE "true" TFALSE "false"
-%token INT "int" FLOAT "float" IDENT "identifier"
+%token NIL "null" TTRUE "true" TFALSE "false"
+%token INT "int" FLOAT "float" IDENT "identifier" STRING "string"
 %token PLUS "+" MINUS "-" MUL "*" DIV "/" PERCENT "%" PPLUS "++" MMINUS "--"
 %token LT "<" GT ">" EQ "=" EE "==" LTE "<=" GTE ">=" NE "!="
 %token LPAREN "("  RPAREN ")" LBLOCK "{" RBLOCK "}" SEMICOLON ";" COMMA ","
@@ -51,7 +51,7 @@
 
 %type <int> INT
 %type <float> FLOAT
-%type <std::string> IDENT func_begin
+%type <std::string> STRING IDENT func_begin
 %type <xxs::ast_ptr> primary expr expr_1 stmt  for_begin for_cond for_step
 %type <xxs::StmtsAst*> stmts else_1 block_1 block_2
 %type <params_t> idents
@@ -134,12 +134,13 @@ expr: primary                                                   { $$ = $1;      
 |     "--" IDENT  %prec "++"                                    { $$ = IPPMM(0, MINUS);                                 }
 ;
 
-primary: INT                                                    { $$ = new IntAst($1);                                  }
-|        "nil"                                                  { $$ = new IntAst(NULL);                                }
-|        "true"                                                 { $$ = new IntAst(true);                               }
+primary: "int"                                                  { $$ = new IntAst($1);                                  }
+|        "null"                                                 { $$ = new IntAst(NULL);                                }
+|        "true"                                                 { $$ = new IntAst(true);                                }
 |        "false"                                                { $$ = new IntAst(false);                               }
 |        FLOAT                                                  { $$ = new FloatAst($1);                                }
 |        IDENT                                                  { $$ = new VarAccessAst($1);                            }
+|        STRING                                                 { $$ = new StrAst($1);                                  }
 ;
 
 idents: %empty                                                   { $$ = params_t();                                     }

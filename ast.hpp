@@ -12,6 +12,7 @@ namespace xxs
   {
     Int,
     Float,
+    Str,
     VarAccess,
     Binary,
     Call,
@@ -69,11 +70,7 @@ namespace xxs
     int num{0};
     IntAst(int num) : num(num) {}
     AT id() { return AT::Int; }
-
-    std::string toString()
-    {
-      return std::to_string(num);
-    };
+    std::string toString() { return std::to_string(num); };
   };
 
   struct FloatAst : public Ast
@@ -81,10 +78,15 @@ namespace xxs
     float num{0};
     FloatAst(float num) : num(num) {}
     AT id() { return AT::Float; }
-    std::string toString()
-    {
-      return std::to_string(num);
-    };
+    std::string toString() { return std::to_string(num); };
+  };
+
+  struct StrAst : public Ast
+  {
+    std::string str;
+    StrAst(std::string_view str) : str(str) {  }
+    AT id() { return AT::Str; }
+    std::string toString() { return str; };
   };
 
   struct VarAccessAst : public Ast
@@ -92,10 +94,7 @@ namespace xxs
     std::string name;
     VarAccessAst(std::string_view name) : name(name) {}
     AT id() { return AT::VarAccess; }
-    std::string toString()
-    {
-      return name;
-    };
+    std::string toString() { return name; };
   };
 
   struct VarAssignAst : public Ast
@@ -206,8 +205,8 @@ namespace xxs
     stmts_ptr th;
     stmts_ptr el;
 
-    IfAst(ast_ptr cond, stmts_ptr th, stmts_ptr el) : cond(cond), th(th), el(el) { }
-    
+    IfAst(ast_ptr cond, stmts_ptr th, stmts_ptr el) : cond(cond), th(th), el(el) {}
+
     ~IfAst()
     {
       delete cond;

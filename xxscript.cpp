@@ -1,5 +1,7 @@
 ﻿#include <iostream>
 #include <format>
+#include <stdarg.h>
+
 #include "parser.h"
 #include "CodeGen.hpp"
 
@@ -9,6 +11,7 @@ extern xxs::parser::symbol_type yylex();
 extern FILE *yyin, *yyout;
 
 int parserArgv(int argc, char *argv[]);
+
 
 #ifdef _WIN32
 #define DLLEXPORT __declspec(dllexport)

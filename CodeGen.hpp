@@ -55,7 +55,6 @@ namespace xxs
 {
   struct CodeGen
   {
-  private:
     std::unique_ptr<LLVMContext> llctx;
     std::unique_ptr<IRBuilder<>> b;
     std::unique_ptr<Module> m;
@@ -64,10 +63,8 @@ namespace xxs
 
     BasicBlock *breakBB{nullptr};
     BasicBlock *continueBB{nullptr};
-
     bool bPass{false};
 
-  public:
     CodeGen(bool bPass) : bPass(bPass)
     {
       llctx = std::make_unique<LLVMContext>();
@@ -189,6 +186,8 @@ namespace xxs
         return cg_int(reinterpret_cast<IntAst *>(ast));
       case AT::Float:
         return cg_float(reinterpret_cast<FloatAst *>(ast));
+      case AT::Str:
+        return cg_string(reinterpret_cast<StrAst *>(ast));
       case AT::VarAccess:
         return cg_varAccess(reinterpret_cast<VarAccessAst *>(ast));
       case AT::Binary:
@@ -228,6 +227,11 @@ namespace xxs
     Value *cg_float(FloatAst *ast)
     {
       return ConstantFP::get(*llctx, APFloat(ast->num));
+    }
+
+    Value *cg_string(StrAst *ast)
+    {
+      return b->CreateGlobalString(ast->str);
     }
 
     Value *cg_varAccess(VarAccessAst *ast)

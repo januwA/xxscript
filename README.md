@@ -4,14 +4,20 @@
 
 > ./x64/Release/xxscript.exe -i ./test.xxs -print
 
-## 数字
+## Number
 
 ```
-1       i32 
-1.2     f32 
+1       i64 
+1.2     f64 
 ```
 
-## 函数
+## Bool
+```
+true  i1
+false i1
+```
+
+## Function
 
 ```
 function name(p1, p2) {
