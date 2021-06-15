@@ -48,11 +48,12 @@ IDENT   (?i:[a-z][a-z0-9]*)
 ")"             { _T(RPAREN);       }
 "{"             { _T(LBLOCK);       }
 "}"             { _T(RBLOCK);       }
+"["             { _T(LSQUARE);      }
+"]"             { _T(RSQUARE);      }
 ";"             { _T(SEMICOLON);    }
 ","             { _T(COMMA);        }
 "?"             { _T(QUESTION);     }
 ":"             { _T(COLON);        }
-
 
 
 "null"          { _T(NIL);          }

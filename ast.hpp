@@ -26,7 +26,10 @@ namespace xxs
     Break,
     Continue,
     Bool,
+    List,
+    Map,
   };
+
   struct Ast
   {
     virtual AT id() = 0;
@@ -244,6 +247,22 @@ namespace xxs
     std::string toString()
     {
       return std::format("for (;;) { }");
+    };
+  };
+
+  struct ListAst : public Ast
+  {
+    std::vector<ast_ptr> items;
+    ListAst(std::vector<ast_ptr> items) : items(items) {}
+    ~ListAst()
+    {
+      for (auto a : items)
+        delete a;
+    }
+    AT id() { return AT::List; }
+    std::string toString()
+    {
+      return std::format("[...]");
     };
   };
 

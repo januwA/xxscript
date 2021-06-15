@@ -18,7 +18,12 @@ int parserArgv(int argc, char *argv[]);
 #define DLLEXPORT
 #endif
 
-extern "C" DLLEXPORT int print(int count, char *_format, ...)
+extern "C" DLLEXPORT std::string llval2str(int64_t llval)
+{
+  return "llvmval";
+}
+
+extern "C" DLLEXPORT int print(int64_t count, char *_format, ...)
 {
   // printf("count:%d\n", count);
   // printf("format:%s\n", _format);

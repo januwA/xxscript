@@ -54,10 +54,10 @@
       }
     },
     {
-      "label": "test.c",
+      "label": "test.cpp",
       "type": "shell",
       "windows": {
-        "command": "clang.exe -emit-llvm -S test.c -o test.c.ll"
+        "command": "clang++.exe -emit-llvm -S test.cpp -o test.ll"
       }
     },
   ]

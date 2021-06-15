@@ -45,6 +45,7 @@
 #ifndef YY_XXS_PARSER_H_INCLUDED
 # define YY_XXS_PARSER_H_INCLUDED
 // "%code requires" blocks.
+#line 17 "parser.y"
 
   #include <memory>
   #include <format>
@@ -56,6 +57,7 @@
   #define BINARY(op) yylhs.value.as < xxs::ast_ptr > () = new BinaryAst(token::op,  yystack_[2].value.as<xxs::ast_ptr>(),  yystack_[0].value.as<xxs::ast_ptr>())
   #define IPPMM(i, op) new VarAssignAst( yystack_[i].value.as<std::string>(), token::EQ, new BinaryAst(token::op, new VarAccessAst(yystack_[i].value.as<std::string>()), new IntAst(1)) )
 
+#line 61 "parser.h"
 
 
 # include <cstdlib> // std::abort
@@ -192,6 +194,7 @@
 #endif  /* ! defined XXSDEBUG */
 
 namespace xxs {
+#line 198 "parser.h"
 
 
 
@@ -494,10 +497,12 @@ namespace xxs {
     RPAREN = 288,                  // ")"
     LBLOCK = 289,                  // "{"
     RBLOCK = 290,                  // "}"
-    SEMICOLON = 291,               // ";"
-    COMMA = 292,                   // ","
-    QUESTION = 293,                // "?"
-    COLON = 294                    // ":"
+    LSQUARE = 291,                 // "["
+    RSQUARE = 292,                 // "]"
+    SEMICOLON = 293,               // ";"
+    COMMA = 294,                   // ","
+    QUESTION = 295,                // "?"
+    COLON = 296                    // ":"
       };
       /// Backward compatibility alias (Bison 3.6).
       typedef token_kind_type yytokentype;
@@ -514,7 +519,7 @@ namespace xxs {
     {
       enum symbol_kind_type
       {
-        YYNTOKENS = 40, ///< Number of tokens.
+        YYNTOKENS = 42, ///< Number of tokens.
         S_YYEMPTY = -2,
         S_YYEOF = 0,                             // "end of file"
         S_YYerror = 1,                           // error
@@ -552,26 +557,28 @@ namespace xxs {
         S_RPAREN = 33,                           // ")"
         S_LBLOCK = 34,                           // "{"
         S_RBLOCK = 35,                           // "}"
-        S_SEMICOLON = 36,                        // ";"
-        S_COMMA = 37,                            // ","
-        S_QUESTION = 38,                         // "?"
-        S_COLON = 39,                            // ":"
-        S_YYACCEPT = 40,                         // $accept
-        S_main = 41,                             // main
-        S_stmts = 42,                            // stmts
-        S_stmt = 43,                             // stmt
-        S_block_1 = 44,                          // block_1
-        S_block_2 = 45,                          // block_2
-        S_for_begin = 46,                        // for_begin
-        S_for_cond = 47,                         // for_cond
-        S_for_step = 48,                         // for_step
-        S_else_1 = 49,                           // else_1
-        S_expr_1 = 50,                           // expr_1
-        S_func_begin = 51,                       // func_begin
-        S_expr = 52,                             // expr
-        S_primary = 53,                          // primary
-        S_idents = 54,                           // idents
-        S_exprs = 55                             // exprs
+        S_LSQUARE = 36,                          // "["
+        S_RSQUARE = 37,                          // "]"
+        S_SEMICOLON = 38,                        // ";"
+        S_COMMA = 39,                            // ","
+        S_QUESTION = 40,                         // "?"
+        S_COLON = 41,                            // ":"
+        S_YYACCEPT = 42,                         // $accept
+        S_main = 43,                             // main
+        S_stmts = 44,                            // stmts
+        S_stmt = 45,                             // stmt
+        S_block_1 = 46,                          // block_1
+        S_block_2 = 47,                          // block_2
+        S_for_begin = 48,                        // for_begin
+        S_for_cond = 49,                         // for_cond
+        S_for_step = 50,                         // for_step
+        S_else_1 = 51,                           // else_1
+        S_expr_1 = 52,                           // expr_1
+        S_func_begin = 53,                       // func_begin
+        S_expr = 54,                             // expr
+        S_primary = 55,                          // primary
+        S_idents = 56,                           // idents
+        S_exprs = 57                             // exprs
       };
     };
 
@@ -1544,6 +1551,36 @@ switch (yykind)
 #if 201103L <= YY_CPLUSPLUS
       static
       symbol_type
+      make_LSQUARE (location_type l)
+      {
+        return symbol_type (token::LSQUARE, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_LSQUARE (const location_type& l)
+      {
+        return symbol_type (token::LSQUARE, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
+      make_RSQUARE (location_type l)
+      {
+        return symbol_type (token::RSQUARE, std::move (l));
+      }
+#else
+      static
+      symbol_type
+      make_RSQUARE (const location_type& l)
+      {
+        return symbol_type (token::RSQUARE, l);
+      }
+#endif
+#if 201103L <= YY_CPLUSPLUS
+      static
+      symbol_type
       make_SEMICOLON (location_type l)
       {
         return symbol_type (token::SEMICOLON, std::move (l));
@@ -1905,9 +1942,9 @@ switch (yykind)
     /// Constants.
     enum
     {
-      yylast_ = 308,     ///< Last index in yytable_.
+      yylast_ = 324,     ///< Last index in yytable_.
       yynnts_ = 16,  ///< Number of nonterminal symbols.
-      yyfinal_ = 41 ///< Termination state number.
+      yyfinal_ = 44 ///< Termination state number.
     };
 
 
@@ -1955,10 +1992,10 @@ switch (yykind)
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
       25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
-      35,    36,    37,    38,    39
+      35,    36,    37,    38,    39,    40,    41
     };
     // Last valid token kind.
-    const int code_max = 294;
+    const int code_max = 296;
 
     if (t <= 0)
       return symbol_kind::S_YYEOF;
@@ -2146,6 +2183,7 @@ switch (yykind)
   }
 
 } // xxs
+#line 2187 "parser.h"
 
 
 

@@ -75,8 +75,10 @@ namespace xxs
     // 声明外部函数
     void declares()
     {
-      auto print = Function::Create(FunctionType::get(b->getInt64Ty(), {b->getInt32Ty(), b->getInt8PtrTy()}, true), Function::ExternalLinkage, "print", m.get());
+      auto print = Function::Create(FunctionType::get(b->getInt64Ty(), {b->getInt64Ty(), b->getInt8PtrTy()}, true), Function::ExternalLinkage, "print", m.get());
       ctx.setf("print", print);
+
+      auto llval2str1 = Function::Create(FunctionType::get(b->getInt8PtrTy(), {b->getInt64Ty()}, false), Function::ExternalLinkage, "llval2str", m.get());
     }
 
     int jit()
@@ -208,6 +210,8 @@ namespace xxs
         return cg_break(reinterpret_cast<BreakAst *>(ast));
       case AT::Continue:
         return cg_continue(reinterpret_cast<ContinueAst *>(ast));
+      case AT::List:
+        return cg_list(reinterpret_cast<ListAst *>(ast));
       }
     }
 
@@ -234,11 +238,11 @@ namespace xxs
 
     Value *cg_varAccess(VarAccessAst *ast)
     {
-      auto val = ctx.get(ast->name);
-      if (val)
+      auto *aa = ctx.get(ast->name);
+      if (aa)
       {
         // printf("var:%s\n", ast->name);
-        return b->CreateLoad(val, ast->name);
+        return b->CreateLoad(aa, ast->name);
       }
 
       auto fun = ctx.getf(ast->name);
@@ -259,37 +263,37 @@ namespace xxs
       switch (ast->op)
       {
       case parser::token::PLUS:
-        if (l->getType()->isDoubleTy() || r->getType()->isDoubleTy())
+        if (isa<ConstantFP>(l) || isa<ConstantFP>(r))
           return b->CreateFAdd(b->CreateSIToFP(l, b->getDoubleTy()), b->CreateSIToFP(r, b->getDoubleTy()));
         else
           return b->CreateAdd(l, r);
       case parser::token::MINUS:
-        if (l->getType()->isDoubleTy() || r->getType()->isDoubleTy())
+        if (isa<ConstantFP>(l) || isa<ConstantFP>(r))
           return b->CreateFSub(b->CreateSIToFP(l, b->getDoubleTy()), b->CreateSIToFP(r, b->getDoubleTy()));
         else
           return b->CreateSub(l, r);
       case parser::token::MUL:
-        if (l->getType()->isDoubleTy() || r->getType()->isDoubleTy())
+        if (isa<ConstantFP>(l) || isa<ConstantFP>(r))
           return b->CreateFMul(b->CreateSIToFP(l, b->getDoubleTy()), b->CreateSIToFP(r, b->getDoubleTy()));
         else
           return b->CreateMul(l, r);
 
         // TODO: 5 / 2 => 2.5
       case parser::token::DIV:
-        if (l->getType()->isDoubleTy() || r->getType()->isDoubleTy())
+        if (isa<ConstantFP>(l) || isa<ConstantFP>(r))
           return b->CreateFDiv(b->CreateSIToFP(l, b->getDoubleTy()), b->CreateSIToFP(r, b->getDoubleTy()));
         else
           return b->CreateSDiv(l, r);
 
         // TODO: 5.0 % 4 => 1
       case parser::token::PERCENT:
-        if (l->getType()->isDoubleTy() || r->getType()->isDoubleTy())
+        if (isa<ConstantFP>(l) || isa<ConstantFP>(r))
           return b->CreateFRem(b->CreateSIToFP(l, b->getDoubleTy()), b->CreateSIToFP(r, b->getDoubleTy()));
         else
           return b->CreateSRem(l, r);
       case parser::token::LT:
       {
-        if (l->getType()->isDoubleTy() || r->getType()->isDoubleTy())
+        if (isa<ConstantFP>(l) || isa<ConstantFP>(r))
           l = b->CreateFCmpOLT(b->CreateSIToFP(l, b->getDoubleTy()), b->CreateSIToFP(r, b->getDoubleTy()));
         else
           l = b->CreateICmpSLT(l, r);
@@ -298,7 +302,7 @@ namespace xxs
       }
       case parser::token::GT:
       {
-        if (l->getType()->isDoubleTy() || r->getType()->isDoubleTy())
+        if (isa<ConstantFP>(l) || isa<ConstantFP>(r))
           l = b->CreateFCmpOGT(b->CreateSIToFP(l, b->getDoubleTy()), b->CreateSIToFP(r, b->getDoubleTy()));
         else
           l = b->CreateICmpSGT(l, r);
@@ -307,7 +311,7 @@ namespace xxs
       }
       case parser::token::LTE:
       {
-        if (l->getType()->isDoubleTy() || r->getType()->isDoubleTy())
+        if (isa<ConstantFP>(l) || isa<ConstantFP>(r))
           l = b->CreateFCmpOLE(b->CreateSIToFP(l, b->getDoubleTy()), b->CreateSIToFP(r, b->getDoubleTy()));
         else
           l = b->CreateICmpSLE(l, r);
@@ -316,7 +320,7 @@ namespace xxs
       }
       case parser::token::GTE:
       {
-        if (l->getType()->isDoubleTy() || r->getType()->isDoubleTy())
+        if (isa<ConstantFP>(l) || isa<ConstantFP>(r))
           l = b->CreateFCmpOGE(b->CreateSIToFP(l, b->getDoubleTy()), b->CreateSIToFP(r, b->getDoubleTy()));
         else
           l = b->CreateICmpSGE(l, r);
@@ -325,7 +329,7 @@ namespace xxs
       }
       case parser::token::EE:
       {
-        if (l->getType()->isDoubleTy() || r->getType()->isDoubleTy())
+        if (isa<ConstantFP>(l) || isa<ConstantFP>(r))
           l = b->CreateFCmpOEQ(b->CreateSIToFP(l, b->getDoubleTy()), b->CreateSIToFP(r, b->getDoubleTy()));
         else
           l = b->CreateICmpEQ(l, r);
@@ -334,7 +338,7 @@ namespace xxs
       }
       case parser::token::NE:
       {
-        if (l->getType()->isDoubleTy() || r->getType()->isDoubleTy())
+        if (isa<ConstantFP>(l) || isa<ConstantFP>(r))
         {
           l = b->CreateFCmpONE(b->CreateSIToFP(l, b->getDoubleTy()), b->CreateSIToFP(r, b->getDoubleTy()));
         }
@@ -355,8 +359,36 @@ namespace xxs
 
     Value *cg_call(CallAst *ast)
     {
-      auto F = codegen(ast->name);
-      if (F->getType()->getTypeID() != Type::TypeID::PointerTyID)
+      if (auto *F = dyn_cast<Function>(codegen(ast->name)))
+      {
+        std::vector<Value *> argv;
+        if (F->getName().str() == "print")
+        {
+          argv.push_back(b->getInt64(ast->args.size() - 1));
+          for (auto a : ast->args)
+          {
+            auto v = codegen(a);
+            if (v->getType()->isDoubleTy())
+            {
+              auto d = reinterpret_cast<ConstantFP *>(v)->getValueAPF().convertToDouble();
+              v = b->CreateGlobalStringPtr(std::to_string(d));
+            }
+            else if (v->getType()->isIntegerTy())
+            {
+              auto a = reinterpret_cast<ConstantInt *>(v);
+              v = b->CreateGlobalStringPtr(std::to_string(a->getSExtValue()));
+            }
+            argv.push_back(v);
+          }
+        }
+        else
+        {
+          for (auto a : ast->args)
+            argv.push_back(codegen(a));
+        }
+        return b->CreateCall(F, argv);
+      }
+      else
       {
         auto id = ast->name->id();
         if (id == xxs::AT::VarAccess || id == xxs::AT::Function)
@@ -364,33 +396,6 @@ namespace xxs
         else
           throw std::exception(std::format("{} is not a function", ast->name->toString()).data());
       }
-
-      std::vector<Value *> argv;
-      if (F->getName().str() == "print")
-      {
-        argv.push_back(b->getInt32(ast->args.size() - 1));
-        for (auto a : ast->args)
-        {
-          auto v = codegen(a);
-          if (v->getType()->isDoubleTy())
-          {
-            auto d = reinterpret_cast<ConstantFP *>(v)->getValueAPF().convertToDouble();
-            v = b->CreateGlobalStringPtr(std::to_string(d));
-          }
-          else if (v->getType()->isIntegerTy())
-          {
-            auto i = reinterpret_cast<ConstantInt *>(v)->getSExtValue();
-            v = b->CreateGlobalStringPtr(std::to_string(i));
-          }
-          argv.push_back(v);
-        }
-      }
-      else
-      {
-        for (auto a : ast->args)
-          argv.push_back(codegen(a));
-      }
-      return b->CreateCall(reinterpret_cast<Function *>(F), argv);
     }
 
     Value *cg_function(FuncAst *ast)
@@ -403,8 +408,8 @@ namespace xxs
       }
 
       auto parentBB = b->GetInsertBlock();
-      std::vector<Type *> params(ast->params.size(), b->getInt32Ty());
-      auto ftype = FunctionType::get(b->getInt32Ty(), params, false);
+      SmallVector<Type *> params(ast->params.size(), b->getInt64Ty());
+      auto ftype = FunctionType::get(b->getInt64Ty(), params, false);
       auto F = Function::Create(ftype, Function::ExternalLinkage, ast->name, m.get());
 
       // 将函数添加到当前scope，在创建新的scope
@@ -423,9 +428,9 @@ namespace xxs
       for (auto &Arg : F->args())
       {
         auto argname = Arg.getName().str();
-        auto Alloca = CreateEntryBlockAlloca(F, Arg.getType(), argname);
-        b->CreateStore(&Arg, Alloca);
-        ctx.set(argname, Alloca);
+        auto *aa = CreateEntryBlockAlloca(F, Arg.getType(), argname);
+        b->CreateStore(&Arg, aa);
+        ctx.set(argname, aa);
       }
 
       bool notRet = true;
@@ -436,7 +441,7 @@ namespace xxs
 
       // 默认返回0
       if (notRet)
-        b->CreateRet(b->getInt32(0));
+        b->CreateRet(b->getInt64(0));
 
       verifyFunction(*F);
       b->SetInsertPoint(parentBB ? parentBB : BB);
@@ -451,7 +456,7 @@ namespace xxs
     Value *cg_stmts(StmtsAst *ast)
     {
       if (ast->stmts.empty())
-        return b->getInt32(0);
+        return b->getInt64(0);
 
       Value *v = nullptr;
       for (auto s : ast->stmts)
@@ -543,9 +548,9 @@ namespace xxs
 
       // 进入loop循环
       auto LoopBB = BasicBlock::Create(*llctx, "loop", F);
-      auto LoopBodyBB = BasicBlock::Create(*llctx, "loopBody", F);
-      auto LoopStepBB = BasicBlock::Create(*llctx, "loopStep", F);
-      auto LoopEndBB = BasicBlock::Create(*llctx, "loopEnd", F);
+      auto LoopBodyBB = BasicBlock::Create(*llctx, "loop.body", F);
+      auto LoopStepBB = BasicBlock::Create(*llctx, "loop.step", F);
+      auto LoopEndBB = BasicBlock::Create(*llctx, "loop.end", F);
 
       breakBB = LoopEndBB;
       continueBB = LoopStepBB;
@@ -614,8 +619,14 @@ namespace xxs
 
     Value *cg_ret(RetAst *ast)
     {
-      auto r = b->CreateRet(ast->val ? codegen(ast->val) : b->getInt32(0));
+      auto r = b->CreateRet(ast->val ? codegen(ast->val) : b->getInt64(0));
       return r;
+    }
+
+    Value *cg_list(ListAst *ast)
+    {
+      // TODO::
+      return nullptr;
     }
 
     AllocaInst *CreateEntryBlockAlloca(Function *fun, Type *type, std::string_view VarName)

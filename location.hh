@@ -54,6 +54,7 @@
 # endif
 
 namespace xxs {
+#line 58 "location.hh"
 
   /// A point in a source file.
   class position
@@ -298,5 +299,6 @@ namespace xxs {
   }
 
 } // xxs
+#line 303 "location.hh"
 
 #endif // !YY_XXS_LOCATION_HH_INCLUDED

@@ -39,7 +39,7 @@
 %token INT "int" FLOAT "float" IDENT "identifier" STRING "string"
 %token PLUS "+" MINUS "-" MUL "*" DIV "/" PERCENT "%" PPLUS "++" MMINUS "--"
 %token LT "<" GT ">" EQ "=" EE "==" LTE "<=" GTE ">=" NE "!="
-%token LPAREN "("  RPAREN ")" LBLOCK "{" RBLOCK "}" SEMICOLON ";" COMMA "," QUESTION "?" COLON ":"
+%token LPAREN "("  RPAREN ")" LBLOCK "{" RBLOCK "}" LSQUARE "[" RSQUARE "]" SEMICOLON ";" COMMA "," QUESTION "?" COLON ":"
 
 %right "?"
 %right "="
@@ -61,7 +61,7 @@
 %start main
 %%
 
-main: stmts YYEOF                                               { _main = new FuncAst("main", params_t(), $1);    }
+main: stmts YYEOF                                               { _main = new FuncAst("main", params_t(), $1);          }
 |     YYEOF                                                     { _main = nullptr;                                      }
 ;
 
@@ -70,8 +70,8 @@ stmts: stmt                                                     { $$ = new Stmts
 ;
 
 /* 由于expr_1可选的分号,会造成冲突 */
-stmt: expr_1                                                    { $$=$1;                                                }
-|     expr_1 ";"                                                { $$=$1;                                                }
+stmt: expr_1                                                    { $$ = $1;                                              }
+|     expr_1 ";"                                                { $$ = $1;                                              }
 |     "return" expr_1 ";"                                       { $$ = new RetAst($2);                                  }
 |     "return" ";"                                              { $$ = new RetAst();                                    }
 |     "if" "(" expr_1 ")" block_2 else_1                        { $$ = new IfAst($3, $block_2, $else_1);                }
@@ -109,6 +109,7 @@ else_1: %empty                                                  { $$ = new Stmts
 expr_1: IDENT "=" expr_1                                        { $$ = new VarAssignAst($1, token::EQ, $3);             }
 |       expr                                                    { $$ = $1;                                              }
 |       func_begin "(" idents ")" block_1                       { $$ = new FuncAst($1, std::move($idents), $block_1);   }
+|       "[" exprs "]"                                           { $$ = new ListAst(std::move($2));                      }
 |       expr_1 "?" expr_1 ":" expr_1                            { $$ = new IfAst($1, new StmtsAst({$3}), new StmtsAst({$5}));}
 ;
 
@@ -138,8 +139,8 @@ expr: primary                                                   { $$ = $1;      
 
 primary: "int"                                                  { $$ = new IntAst($1);                                  }
 |        "null"                                                 { $$ = new IntAst(NULL);                                }
-|        "true"                                                 { $$ = new IntAst(1);                               }
-|        "false"                                                { $$ = new IntAst(0);                              }
+|        "true"                                                 { $$ = new IntAst(1);                                   }
+|        "false"                                                { $$ = new IntAst(0);                                   }
 |        FLOAT                                                  { $$ = new FloatAst($1);                                }
 |        IDENT                                                  { $$ = new VarAccessAst($1);                            }
 |        STRING                                                 { $$ = new StrAst($1);                                  }
